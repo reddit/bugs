@@ -1,0 +1,16 @@
+name: Bash Tests
+
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: bash:3.2.57
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Run Bash tests
+        run: |
+          bash ./test/test_bugs.sh
