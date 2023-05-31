@@ -35,7 +35,7 @@ SOLR-2377	To Do	Cleanup admin UI relevance section
 And add new issues for this epic as things come up
 
 ```
-$> bugs ltr_integ "The foobar ate the server"
+$> bugs relevance_work "Solve for foobar in the UI"
 ```
 
 Run `bugs help` for more info.
