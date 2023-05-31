@@ -12,11 +12,11 @@ Most teams work on some grouping of tasks (here organized into Epics) over some 
 Put your team's epics for this quarter (or period, or whatever) in `.quarter` in your home directory. It should look like:
 
 ```
-SOLR-2313,search
+SOLR-2313,relevance_work
 SOLR-2314,ml_model
 SOLR-2316,tools
-SOLR-2319,sqs
-SOLR-2373,nsfw
+SOLR-2319,test_bench
+SOLR-2373,ui_filters
 ```
 
 Here you have the epic name, and a shortcut - a name you choose to make it easier to remember the epic. Add duplicate rows if you want multiple shortcuts.
@@ -24,12 +24,12 @@ Here you have the epic name, and a shortcut - a name you choose to make it easie
 Now use `bugs` to help you navigate:
 
 ```
-$> bugs search
+$> bugs relevance_work
 
 KEY		STATUS	SUMMARY
 SOLR-2374	Done	Fix crash in LTR plugin
 SOLR-2409	Done	Fix issue with edismax query parser
-SOLR-2377	To Do	Cleanup admin UI
+SOLR-2377	To Do	Cleanup admin UI relevance section
 ```
 
 And add new issues for this epic as things come up
