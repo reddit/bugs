@@ -5,7 +5,7 @@ on:
 
 jobs:
   test:
-    runs-on: bash:3.2.57
+    runs-on: ubuntu-latest
 
     steps:
       - name: Check out code
