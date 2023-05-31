@@ -1,7 +1,7 @@
 # Bugs
 (smarmy rabbit, avoids hard work)
 
-[![Build Status](https://drone.build.ue1.snooguts.net/api/badges/douglas-turnbull/bugs/status.svg)](https://drone.build.ue1.snooguts.net/douglas-turnbull/bugs)
+[![Build Status](https://github.com/reddit/bugs/actions/workflows/test.yml/badge.svg)](https://github.com/reddit/bugs/actions/workflows/test.yml)
 
 Opinionated way to deal with Jira at the command line.
 
