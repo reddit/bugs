@@ -4,6 +4,7 @@
 
 # Test files occur in local directory
 QUARTER_FILE=".quarter"
+TRANSITIONS_FILE=".transitions"
 SCRATCH_FILE=".scratch"
 
 if [[ -f "jira_mock" ]]; then
@@ -36,6 +37,7 @@ fi
 if [[ ! -f "$QUARTER_FILE" ]]; then
   QUARTER_FILE="$HOME/.quarter"
   SCRATCH_FILE="$HOME/.scratch"
+  TRANSITIONS_FILE="$HOME/.transitions"
 fi
 
 
@@ -48,6 +50,8 @@ shortucts=()
 scratch_lines=()
 scratch_id=()
 scratch_memo=()
+transition_ids=()
+transition_stages=()
 
 squish_string() {
   # squish $1 without dashashes, spaces, and underscores 
@@ -62,6 +66,23 @@ while IFS=',' read -r col1 col2; do
     issues+=("$col1")
     shortcuts+=(`squish_string "$col2"`)
 done < "$QUARTER_FILE"
+
+# Create a .transitions file if it doesn't exist
+if [ ! -f "$TRANSITIONS_FILE" ]; then
+  touch "$TRANSITIONS_FILE"
+fi
+
+# Read transitions file
+while IFS=',' read -r key values; do
+  if [[ $key ]]; then
+    # values=$(echo "$values" | awk '{$1=$1};1')
+
+    transition_ids+=("$key")
+    transition_stages+=("$values")
+  fi
+done < $TRANSITIONS_FILE
+
+
 
 # Create a .scratch file if it doesn't exist
 if [ ! -f "$SCRATCH_FILE" ]; then
@@ -257,9 +278,59 @@ branch() {
 }
 
 
+transition_issue() {
+  issue=$1
+  IFS=',' read -ra transitions_array <<< "$2"
+  for transition in "${transitions_array[@]}"; do
+    $JIRA_COMMAND issue move $issue "$transition"
+    if [[ $? != 0 ]]; then
+      return 1
+    fi
+  done <<< "$transitions"
+}
+
+
+get_transitions_for() {
+  for i in "${!transition_ids[@]}"; do
+    if [[ "${transition_ids[$i]}" = "$1" ]]; then
+      echo "${transition_stages[$i]}"
+      return 0
+    fi
+  done
+}
+
+
+start_issue() {
+  transitions=("Ready" "Started")
+  transitions=$(get_transitions_for 'start')
+  transition_issue $1 "$transitions"
+}
+
+pause_issue() {
+  transitions=("Cancelled" "Restarted")
+  transitions=$(get_transitions_for 'pause')
+  transition_issue $1 "$transitions"
+}
+
+
+complete_issue() {
+  transitions=("Cancelled" "Restarted")
+  transitions=$(get_transitions_for 'complete')
+  transition_issue $1 "$transitions"
+}
+
+
+cancel_issue() {
+  transitions=("Cancelled")
+  transitions=$(get_transitions_for 'cancel')
+  transition_issue $1 "$transitions"
+}
+
+
 best_ticket_for_folder() {
   if [[ $1 != "epic" ]]; then
     branch_name=`$GIT_COMMAND rev-parse --abbrev-ref HEAD | cut -d '/' -f1`
+    echo $branch_name
     looks_like_jira_issue "$branch_name"
     if [[ $? == 0 ]]; then
       echo "$branch_name"
@@ -311,6 +382,7 @@ print_help() {
 # that shortcut, then it will use that epic when you do:
 #  bugs .
 if [[ $2 == "." ]]; then
+  echo "CHECKING SECOND ARG $2"
   # and open the epic
   prefer_epic=""
   # User explicitly wants an epic, dont use branch name
@@ -319,19 +391,36 @@ if [[ $2 == "." ]]; then
   fi
   set -- $1 `best_ticket_for_folder $prefer_epic`
 elif [[ $1 == "." ]]; then
+  echo "CHECKING FIRST ARG $1"
+  echo "Best ticket for folder"
+  best_ticket_for_folder $2
+  echo "--------------------------------"
   # and open the epic
   set -- `best_ticket_for_folder` $2
 fi
+
+echo "COMMANDS $1 $2 $3"
 
 
 # Shitty argument parsing
 #  I should use getopts but I'm lazy
 if [[ $1 == "bunny" ]]; then
   bugs_bunny
+# Kanbanish commands
+elif [[ $1 == "start" ]]; then
+  start_issue "$2"
+elif [[ $1 == "complete" ]]; then
+  complete_issue "$2"
+elif [[ $1 == "cancel" ]]; then
+  cancel_issue "$2"
+elif [[ $1 == "pause" ]]; then
+  pause_issue "$2"
 elif [[ $1 == "open" ]]; then
   open_epic "$2" "$1" "$3"
+# Scratch TODO
 elif [[ $1 == "scratch" ]]; then
   scratch_commands "$2" "$3"
+# Current quarters
 elif [[ $1 == "quarter" ]]; then
   quarter
 elif [[ $1 == "epic" ]]; then

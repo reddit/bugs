@@ -15,6 +15,12 @@ fixtures() {
     echo "TEST-1237,with_underscores" >> .quarter
     echo "1,idea 1" >> .scratch
     echo "2,idea 2" >> .scratch
+    
+    # Kanban transitions
+    echo "start,start1,start 2" >> .transitions
+    echo "complete,Complete 1,Complete 2" >> .transitions
+    echo "pause,pause1,pause2" >> .transitions
+    echo "cancel,killitwithfire" >> .transitions
 
     touch .last_jira_mock_args
     touch .last_editor_mock_args
@@ -26,6 +32,7 @@ clean_fixtures() {
     rm -f ./editor_mock
     rm -f ./git_mock
     rm -f ./.quarter
+    rm -f ./.transitions
     rm -f ./.scratch
     rm -f ./.last_jira_mock_args
     rm -f ./.last_git_mock_args
@@ -223,7 +230,7 @@ test_view_epic_local_dir_git_branch() {
     echo "TEST-9999/foo"
   fi'
   echo "$rev_parse_response" >> ./git_mock
-  ./bugs.sh . > /dev/null
+  ./bugs.sh . 
   assert_jira_called_with "^open TEST-9999"
   return $?
 }
@@ -299,6 +306,40 @@ test_make_new_bug() {
   ./bugs.sh proj1 "Do the thing" > /dev/null
   assert_jira_called_with '^issue create -tTask --parent TEST-1234 --summary Do the thing'
   return $?
+}
+
+# Kanban transitions
+
+test_kanban_start() {
+  ./bugs.sh start TEST-1234 > /dev/null
+  assert_jira_called_with '^issue move TEST-1234 start1'
+  assert_jira_called_with '^issue move TEST-1234 start 2'
+  return $?
+}
+
+test_kanban_cancel() {
+  ./bugs.sh cancel TEST-1234 > /dev/null
+  assert_jira_called_with '^issue move TEST-1234 killitwithfire'
+  return $?
+}
+
+test_kanban_pause() {
+  ./bugs.sh pause TEST-1234 > /dev/null
+  assert_jira_called_with '^issue move TEST-1234 pause1'
+  assert_jira_called_with '^issue move TEST-1234 pause2'
+  return $?
+}
+
+test_kanban_complete() {
+  ./bugs.sh complete TEST-1234
+  assert_jira_called_with '^issue move TEST-1234 Complete 1'
+  assert_jira_called_with '^issue move TEST-1234 Complete 2'
+  return $?
+}
+
+test_no_kanban_transitions() {
+  rm .transitions
+  ./bugs.sh complete TEST-1234 > /dev/null
 }
 
 
