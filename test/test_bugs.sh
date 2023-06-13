@@ -226,7 +226,7 @@ test_view_epic_local_dir() {
 }
 
 test_view_epic_local_dir_git_branch() {
-  rev_parse_response='if [[ "$@" == "rev-parse --abbrev-ref HEAD" ]]; then
+  rev_parse_response='if [[ "$1" == "rev-parse" ]]; then
     echo "TEST-9999/foo"
   fi'
   echo "$rev_parse_response" >> ./git_mock
@@ -297,7 +297,7 @@ test_open_epic_shortcut_has_underscores() {
 }
 
 test_open_epic_local_dir() {
-  ./bugs.sh open . > /dev/null
+  ./bugs.sh open . >  /dev/null 
   assert_jira_called_with "^open TEST-1236"
   return $?
 }

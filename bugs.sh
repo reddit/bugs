@@ -330,7 +330,6 @@ cancel_issue() {
 best_ticket_for_folder() {
   if [[ $1 != "epic" ]]; then
     branch_name=`$GIT_COMMAND rev-parse --abbrev-ref HEAD | cut -d '/' -f1`
-    echo $branch_name
     looks_like_jira_issue "$branch_name"
     if [[ $? == 0 ]]; then
       echo "$branch_name"
@@ -382,7 +381,6 @@ print_help() {
 # that shortcut, then it will use that epic when you do:
 #  bugs .
 if [[ $2 == "." ]]; then
-  echo "CHECKING SECOND ARG $2"
   # and open the epic
   prefer_epic=""
   # User explicitly wants an epic, dont use branch name
@@ -391,15 +389,9 @@ if [[ $2 == "." ]]; then
   fi
   set -- $1 `best_ticket_for_folder $prefer_epic`
 elif [[ $1 == "." ]]; then
-  echo "CHECKING FIRST ARG $1"
-  echo "Best ticket for folder"
-  best_ticket_for_folder $2
-  echo "--------------------------------"
   # and open the epic
   set -- `best_ticket_for_folder` $2
 fi
-
-echo "COMMANDS $1 $2 $3"
 
 
 # Shitty argument parsing
