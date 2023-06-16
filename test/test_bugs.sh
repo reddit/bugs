@@ -314,6 +314,20 @@ test_kanban_start() {
   ./bugs.sh start TEST-1234 > /dev/null
   assert_jira_called_with '^issue move TEST-1234 start1'
   assert_jira_called_with '^issue move TEST-1234 start 2'
+  success=$?
+  num_jira_commands=`wc -l < ./.last_jira_mock_args`
+  if [ $num_jira_commands -ne 2 ]; then
+    return 1
+  fi
+  return $success
+}
+
+
+test_kanban_start_with_comment() {
+  ./bugs.sh start TEST-1234 "Started" > /dev/null
+  assert_jira_called_with '^issue move TEST-1234 start1'
+  assert_jira_called_with '^issue move TEST-1234 start 2'
+  assert_jira_called_with '^issue comment add TEST-1234 Started'
   return $?
 }
 

@@ -281,12 +281,19 @@ branch() {
 transition_issue() {
   issue=$1
   IFS=',' read -ra transitions_array <<< "$2"
+  comment=$3
   for transition in "${transitions_array[@]}"; do
     $JIRA_COMMAND issue move $issue "$transition"
     if [[ $? != 0 ]]; then
       return 1
     fi
   done <<< "$transitions"
+
+  if [[ $comment == "" ]]; then
+    return 0
+  fi
+
+  printf '\n' | $JIRA_COMMAND issue comment add $issue "$comment"
 }
 
 
@@ -303,27 +310,27 @@ get_transitions_for() {
 start_issue() {
   transitions=("Ready" "Started")
   transitions=$(get_transitions_for 'start')
-  transition_issue $1 "$transitions"
+  transition_issue $1 "$transitions" "$2"
 }
 
 pause_issue() {
   transitions=("Cancelled" "Restarted")
   transitions=$(get_transitions_for 'pause')
-  transition_issue $1 "$transitions"
+  transition_issue $1 "$transitions" "$2"
 }
 
 
 complete_issue() {
   transitions=("Cancelled" "Restarted")
   transitions=$(get_transitions_for 'complete')
-  transition_issue $1 "$transitions"
+  transition_issue $1 "$transitions" "$2"
 }
 
 
 cancel_issue() {
   transitions=("Cancelled")
   transitions=$(get_transitions_for 'cancel')
-  transition_issue $1 "$transitions"
+  transition_issue $1 "$transitions" "$2"
 }
 
 
@@ -400,13 +407,13 @@ if [[ $1 == "bunny" ]]; then
   bugs_bunny
 # Kanbanish commands
 elif [[ $1 == "start" ]]; then
-  start_issue "$2"
+  start_issue "$2" "$3"
 elif [[ $1 == "complete" ]]; then
-  complete_issue "$2"
+  complete_issue "$2" "$3"
 elif [[ $1 == "cancel" ]]; then
-  cancel_issue "$2"
+  cancel_issue "$2" "$3"
 elif [[ $1 == "pause" ]]; then
-  pause_issue "$2"
+  pause_issue "$2" "$3"
 elif [[ $1 == "open" ]]; then
   open_epic "$2" "$1" "$3"
 # Scratch TODO
