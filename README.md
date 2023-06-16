@@ -94,6 +94,33 @@ Maintain informal, local todos in your own scratch
 
 Just a global file stored in ~/.scratch
 
+## JIRA->Kanbanish Transitions
+
+Stakeholders usually just focus on a simple kanban views of work. TODO, In Progress, Done, Canceled, etc... Yet teams internally often have other complicated transitions. So bugs has a shortcut:
+
+```
+./bugs start TEST-1234
+./bugs cancel TEST-5678 "duplicate of TEST-1234"
+```
+
+These are the verbs corresponding to work:
+
+* start -> go from TODO to In Progress
+* pause -> go back to TODO
+* complete -> go to DONE
+* cancel -> cancel the task entirely
+
+To do this, we give Jira a little config file to know how to execute that transition. For example to start, we'll try to move the task first from ready to 
+
+```
+start,Ready,Started
+pause,Cancelled,Restarted
+complete,Review,Done
+cancel,Cancelled
+```
+
+Place this file as `.transitions` in your home directory for transitions to work with your projects isuse states.
+
 ## Installation
 
 ### Install Jira Cli via brew
