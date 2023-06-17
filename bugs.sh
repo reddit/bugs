@@ -109,6 +109,17 @@ looks_like_jira_issue() {
   return 1
 }
 
+extract_jira_issue() {
+  regex_pattern="[A-Z]{2,}-[0-9]+"
+  if [[ $1 =~ $regex_pattern ]]; then
+    jira_ticket="${BASH_REMATCH[0]}"
+    echo "$jira_ticket"
+    return 0
+  fi
+  echo ""
+  return 1
+}
+
 
 get_shortcut_index() {
   squished=`squish_string "$1"`
@@ -349,6 +360,57 @@ best_ticket_for_folder() {
 }
 
 
+_process_merged_jira_reference() {
+  jira_issue=$1
+  gh_pr_no=$2
+  commit_msg=$3
+  echo
+  echo "Found PR commit with JIRA issue"
+  echo "  Commit: $commit"
+  echo "  Issue: $jira_issue"
+  echo "     PR: $gh_pr_no"
+  git_comments=$(jira issue view SREL-2475 comments 10 --plain | grep "^  From Github: PR #$gh_pr_no merged")
+  if [[ $? != 0 ]]; then
+    echo "  No Github comment found"
+    echo "  Adding comment on menge to JIRA issue"
+    # jira issue comment add $jira_issue "From Github: $commit merged"
+    PR_URL=$(git config --get remote.origin.url | sed 's/\.git//g')
+    PR_URL=${PR_URL//:/\/}
+    PR_URL="$PR_URL/pull/"
+    PR_URL=${PR_URL//git@/https:\/\/}
+    PR_URL="$PR_URL$gh_pr_no"
+    comment=$(cat <<END
+From Github: PR #$gh_pr_no merged
+$PR_URL
+$commit_msg
+END
+)
+    echo "  Comment: $comment"
+    jira issue comment add $jira_issue "$comment"
+  else
+    echo "  Github comment already found"
+  fi
+}
+
+
+_scan_prs() {
+  # if on main or master
+  if [[ $1 == "main" || $1 == "master" ]]; then
+    git log --pretty=format:"%h %s" -n 10 | while read -r commit; do
+      if [[ $commit =~ ^.*\(#([0-9]+)\)$ ]]; then
+          echo "PR Commit: $commit"
+          gh_pr_no="${BASH_REMATCH[1]}"
+          jira_issue=$(extract_jira_issue "$commit")
+          if [[ $jira_issue != "" ]]; then
+            _process_merged_jira_reference "$jira_issue" "$gh_pr_no" "$commit"
+          fi
+      fi
+        # Perform actions on each commit message
+    done
+  fi
+}
+
+
 print_help() {
   echo "bugs - smarmy rabbit that helps you with JIRA"
   echo "Usages: bugs <command> <issue|epic|shortcut>"
@@ -428,6 +490,8 @@ elif [[ $1 == "bug" ]]; then
   bug "$2" "$3"
 elif [[ $1 == "branch" ]]; then
   branch "$2" "$3"
+elif [[ $1 == "_post_merge_update" ]]; then
+  _scan_prs "$2"
 elif [[ $1 == "help" ]]; then
   print_help
 elif [[ $1 != "" ]]; then
