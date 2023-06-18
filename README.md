@@ -123,15 +123,13 @@ Place this file as `.transitions` in your home directory for transitions to work
 
 ## Installation
 
-### Install Jira Cli via brew
-
-Install this [jira command line tool](https://github.com/ankitpokhrel/jira-cli).
+### With brew
 
 ```
-brew tap ankitpokhrel/jira-cli
-brew install jira-cli
-jira init
+brew tap reddit/bugs
+brew install bugs
 ```
+
 
 ### Config your API key
 
