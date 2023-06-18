@@ -148,7 +148,6 @@ password <YOUR API KEY>
 ### Install this script on your path
 
 ```
-cp bunny.txt ~/bin/bugs
 cp bugs.sh ~/bin/bugs
 ```
 
