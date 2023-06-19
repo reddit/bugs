@@ -3,7 +3,7 @@
 
 [![Build Status](https://github.com/reddit/bugs/actions/workflows/test.yml/badge.svg)](https://github.com/reddit/bugs/actions/workflows/test.yml)
 
-Opinionated way to deal with Jira at the command line.
+Opinionated way to deal with Jira at the command line. Scripts on top of [jira-cli](https://github.com/ankitpokhrel/jira-cli).
 
 Most teams work on some grouping of tasks (here organized into Epics) over some period of time (quarters, 6 week cycles, etc).
 
