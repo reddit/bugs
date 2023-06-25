@@ -181,17 +181,11 @@ test_branch_whitespace() {
 
 test_branch_no_message() {
     ./bugs.sh branch "TEST-111" > /dev/null
-    assert_git_called_with "^checkout -b TEST-111$"
     success=$?
-    if [ $success -ne 0 ]; then
+    if [ $success -eq 0 ]; then
         return 1
     fi
-    assert_git_called_with "status"
-    success=$?
-    if [ $success -ne 0 ]; then
-        return 1
-    fi
-    return $?
+    return 0
 }
 
 

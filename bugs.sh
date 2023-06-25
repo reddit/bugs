@@ -289,7 +289,11 @@ branch() {
     looks_like_jira_issue "$1"
     if [[ $? == 0 ]]; then
       branch_name=$1
-      if [[ $2 != "" ]]; then
+      if [[ $2 == "" ]]; then
+        echo "Please give a branch name"
+        echo "Usage: bugs branch <jira-issue> <branch-name>"
+        return 1
+      else
         whitespace_replaced=`echo $2 | sed 's/ /-/g'`
         branch_name="$branch_name/$whitespace_replaced"
       fi
