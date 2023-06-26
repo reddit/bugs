@@ -283,27 +283,30 @@ branch() {
   issue=`epic_from_shortcut "$1"`
   success=$?
   if [[ $success == 0 ]]; then
-    echo "Dont make branches on epics, instead use an issue"
-    return 1
+    echo "Using an epic, not a JIRA issue, for branch."
+    echo "Totally cool, but if its a big work item, think about"
+    echo "making your own issue"
   else
     looks_like_jira_issue "$1"
     if [[ $? == 0 ]]; then
-      branch_name=$1
-      if [[ $2 == "" ]]; then
-        echo "Please give a branch name"
-        echo "Usage: bugs branch <jira-issue> <branch-name>"
-        return 1
-      else
-        whitespace_replaced=`echo $2 | sed 's/ /-/g'`
-        branch_name="$branch_name/$whitespace_replaced"
-      fi
-      $GIT_COMMAND checkout -b "$branch_name"
-      $GIT_COMMAND status
+      issue=$1
     else
       echo "Not a valid JIRA issue"
       return 1
     fi
   fi
+  
+  branch_name=$issue
+  if [[ $2 == "" ]]; then
+    echo "Please give a branch name"
+    echo "Usage: bugs branch <jira-issue> <branch-name>"
+    return 1
+  else
+    whitespace_replaced=`echo $2 | sed 's/ /-/g'`
+    branch_name="$branch_name/$whitespace_replaced"
+  fi
+  $GIT_COMMAND checkout -b "$branch_name"
+  $GIT_COMMAND status
 }
 
 
@@ -385,7 +388,6 @@ print_help() {
   echo "  commands:"
   echo "    open - open an issue or epic"
   echo "    epic - list issues in an epic"
-  echo "    bug - create a bug in an epic"
   echo "    branch - create a branch for an issue"
   echo "    scratch - add, remove, or list scratch notes"
   echo "    quarter - list the current quarter's epics"
@@ -396,6 +398,7 @@ print_help() {
   echo "    bugs - same as quarter"
   echo "    bugs <issue> - open an issue"
   echo "    bugs <epic> - list epic"
+  echo "    bugs <epic> - \"foo the bar\" - create an issue under epic"
   echo "    bugs <epic> <issue> - create a bug in an epic"
   echo "    scratch - open scratch notes"
   echo "    bugs . - epic for the current folder if the repo corresponds to an epic"
