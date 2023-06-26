@@ -189,13 +189,34 @@ test_branch_no_message() {
 }
 
 
-test_branch_fails_for_epic() {
+test_branch_uses_an_epic() {
     ./bugs.sh branch "TEST-1234" foo > /dev/null
-    num_git_commands=`wc -l < ./.last_git_mock_args | tr -d ' '`
-    if [[ "$num_git_commands" != "0" ]]; then
+    assert_git_called_with "^checkout -b TEST-1234/foo"
+    success=$?
+    if [ $success -ne 0 ]; then
+        return 1
+    fi
+    assert_git_called_with "status"
+    success=$?
+    if [ $success -ne 0 ]; then
         return 1
     fi
 }
+
+test_branch_uses_epic_shortcut() {
+    ./bugs.sh branch "proj1" foo > /dev/null
+    assert_git_called_with "^checkout -b TEST-1234/foo"
+    success=$?
+    if [ $success -ne 0 ]; then
+        return 1
+    fi
+    assert_git_called_with "status"
+    success=$?
+    if [ $success -ne 0 ]; then
+        return 1
+    fi
+}
+
 
 #### 
 # Jira tests
