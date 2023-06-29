@@ -231,6 +231,7 @@ bug() {
     echo "Epic '$1' not found in $QUARTER_FILE"
     return 1
   fi
+  echo "Create bug in $EPIC"
   $JIRA_COMMAND issue create -tTask --parent "$EPIC" --summary "$2"
 }
 
