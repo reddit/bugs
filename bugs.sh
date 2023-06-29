@@ -429,7 +429,7 @@ if [[ $2 == "." ]]; then
   set -- $1 `best_ticket_for_folder $prefer_epic`
 elif [[ $1 == "." ]]; then
   # and open the epic
-  set -- `best_ticket_for_folder` $2
+  set -- `best_ticket_for_folder` "$2"
 fi
 
 
