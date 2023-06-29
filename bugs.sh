@@ -231,7 +231,6 @@ bug() {
     echo "Epic '$1' not found in $QUARTER_FILE"
     return 1
   fi
-  echo "Create bug in $EPIC"
   $JIRA_COMMAND issue create -tTask --parent "$EPIC" --summary "$2"
 }
 
@@ -429,7 +428,7 @@ if [[ $2 == "." ]]; then
   set -- $1 `best_ticket_for_folder $prefer_epic`
 elif [[ $1 == "." ]]; then
   # and open the epic
-  set -- `best_ticket_for_folder` $2
+  set -- `best_ticket_for_folder` "$2"
 fi
 
 

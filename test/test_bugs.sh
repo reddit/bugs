@@ -323,6 +323,12 @@ test_make_new_bug() {
   return $?
 }
 
+test_make_new_bug_with_directory_shortcut() {
+  ./bugs.sh . "Do the thing" > /dev/null
+  assert_jira_called_with '^issue create -tTask --parent TEST-1236 --summary Do the thing'
+  return $?
+}
+
 # Kanban transitions
 
 test_kanban_start() {
