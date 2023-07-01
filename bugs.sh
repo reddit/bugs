@@ -224,6 +224,18 @@ scratch_commands() {
   fi
 }
 
+looks_like_command() {
+  maybe_cmd="$1"
+  cmds=("open" "close" "start" "complete"
+        "cancel" "pause" "scratch" "quarter"
+        "epic" "branch")
+  if [[ " ${cmds[*]} " =~ " $maybe_cmd " ]]; then
+    return 1
+  fi
+  return 0
+}
+
+
 bug() {
   EPIC=`epic_from_shortcut "$1"`
   success=$?
@@ -231,9 +243,17 @@ bug() {
     echo "Epic '$1' not found in $QUARTER_FILE"
     return 1
   fi
-  if [[ $2 = *[![:space:]]* ]]; then
+  summary="$2"
+  looks_like_command "$summary"
+  is_cmd=$?
+  if [[ $is_cmd != 0 ]]; then
+    echo "You appear to be trying to execute a command on $EPIC"
+    echo " bugs expects: bugs <cmd> <EPIC> "
+    return 1
+  fi
+  if [[ "$summary" = *[![:space:]]* ]]; then
     echo "Create bug in $EPIC"
-    $JIRA_COMMAND issue create -tTask --no-input --parent "$EPIC" --summary "$2"
+    $JIRA_COMMAND issue create -tTask --no-input --parent "$EPIC" --summary "$summary"
   else
     echo "Please provided a title for your task"
     return 1

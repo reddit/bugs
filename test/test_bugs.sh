@@ -333,6 +333,22 @@ test_make_new_bug_empty_fails() {
   return 0
 }
 
+test_make_new_bug_with_command_summary_fails() {
+  ./bugs.sh proj1 "open" > /dev/null
+  num_jira_commands=`wc -l < ./.last_jira_mock_args`
+  if [ $num_jira_commands -ne 0 ]; then
+    cat ./.last_jira_mock_args
+    return 1
+  fi
+  return 0
+}
+
+test_make_new_bug_with_command_summary_start_ok() {
+  ./bugs.sh proj1 "open the pod bay doors hal" > /dev/null
+  assert_jira_called_with '^issue create -tTask --no-input --parent TEST-1234 --summary open the pod bay doors hal'
+  return $?
+}
+
 test_make_new_bug_with_directory_shortcut() {
   ./bugs.sh . "Do the thing" > /dev/null
   assert_jira_called_with '^issue create -tTask --no-input --parent TEST-1236 --summary Do the thing'
