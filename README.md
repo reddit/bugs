@@ -7,9 +7,13 @@ Use Jira at arms length, but keep your PM out of your hair. Opinionated way to d
 
 Instead of working in the Jira UI, bugs simplifies your life. It treats Jira as a backend for managing tasks within Epics. Each Epic with a set of tasks that go from TODO -> In Progress -> Complete. It lets you create git branches on those Epics, get Epic status, and ensure your Epics in Jira reflect reality so your PM is happy.
 
-## Epic status
+## Creating Epics
 
-You first need to create Epics in the Jira UI.
+We recommend using the Jira UI itself to create the Epics.
+
+We recommend you do this to get deeper and richer information in the Epic description before starting the quarter. Treat is the one "source of truth" for that area of work. Link out to the important design docs, and other resources. Then treat the tasks underneath them as rather lightweight, mostly just a summary and perhaps some comments / links out to related PRs.
+
+## Epic status
 
 Then put your team's epics for this quarter (or period, or whatever) in `.quarter` in your home directory. It should look like:
 
