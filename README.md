@@ -55,7 +55,7 @@ KEY		STATUS	SUMMARY
 SOLR-2374	Done	Fix crash in LTR plugin
 SOLR-2409	Done	Fix issue with edismax query parser
 SOLR-2377	To Do	Cleanup admin UI relevance section
-SOLR-2410	To Do Solve the foobar in teh UI
+SOLR-2410	To Do	Solve the foobar in the UI
 ```
 
 ## Update your issue progress
@@ -72,9 +72,13 @@ $> bugs relevance_work
 KEY		STATUS	SUMMARY
 SOLR-2374	Done	Fix crash in LTR plugin
 SOLR-2409	Done	Fix issue with edismax query parser
-SOLR-2410	Started Solve the foobar in teh UI
+SOLR-2410	Started	Solve the foobar in the UI
 SOLR-2377	To Do	Cleanup admin UI relevance section
 ```
+
+Now you can give a handy report to your PM.
+
+### Map your Jira states to bugs transitions
 
 These are the verbs corresponding to work:
 
