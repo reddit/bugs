@@ -3,9 +3,9 @@
 
 [![Build Status](https://github.com/reddit/bugs/actions/workflows/test.yml/badge.svg)](https://github.com/reddit/bugs/actions/workflows/test.yml)
 
-Opinionated way to deal with Jira at the command line. Scripts on top of [jira-cli](https://github.com/ankitpokhrel/jira-cli).
+Use Jira at arms length, but keep your PM out of your hair. Opinionated way to deal with Jira at the command line. (Scripts on top of [jira-cli](https://github.com/ankitpokhrel/jira-cli)).
 
-Most teams work on some grouping of tasks (here organized into Epics) over some period of time (quarters, 6 week cycles, etc).
+Instead of working in the Jira UI, bugs simplifies your life. It treats Jira as a backend for managing tasks within Epics. Each Epic with a set of tasks that go from TODO -> In Progress -> Complete. It lets you create git branches on those Epics, get Epic status, and ensure your Epics in Jira reflect reality so your PM is happy.
 
 ## Epic status
 
@@ -78,23 +78,7 @@ SOLR-2355   To Do       Design approval and review
 
 And if you're on a bug branch, you can get this with `bugs epic .`
 
-## Scratch editing
-
-Maintain informal, local todos in your own scratch
-
-```
- $> bugs scratch "Frobinate the flux capacitor"
- $> bugs scratch "Update the floron tubes"
- $> bugs scratch
- 1,Frobinate the flux capacitor
- 2,Update the floron tubes
- $> bugs scratch rm 2   
- $> 1,Frobinate the flux capacitor
-```
-
-Just a global file stored in ~/.scratch
-
-## JIRA->Kanbanish Transitions
+## Jira Issue Transitions
 
 Stakeholders usually just focus on a simple kanban views of work. TODO, In Progress, Done, Canceled, etc... Yet teams internally often have other complicated transitions. So bugs has a shortcut:
 
@@ -110,7 +94,7 @@ These are the verbs corresponding to work:
 * complete -> go to DONE
 * cancel -> cancel the task entirely
 
-To do this, we give Jira a little config file to know how to execute that transition. For example to start, we'll try to move the task first from ready to 
+To do this, we have to handle that Jira is strict about how issues get transitions. So we give bugs a little config file to know how to execute that transition. For example to start, we'll try to move the task first to "Ready" in Jira then to "Started". 
 
 ```
 start,Ready,Started
@@ -118,6 +102,8 @@ pause,Cancelled,Restarted
 complete,Review,Done
 cancel,Cancelled
 ```
+
+If you're not sure where to get these, just figure out what transitions you would use in the UI when performing a "start", etc in your Jira project, and list those here.
 
 Place this file as `.transitions` in your home directory for transitions to work with your projects isuse states.
 
@@ -130,7 +116,6 @@ brew tap reddit/bugs
 brew install bugs
 ```
 
-
 ### Config your API key
 
 [Get an API key, put it somewhere safe](https://github.com/ankitpokhrel/jira-cli#cloud-server).
@@ -141,12 +126,6 @@ Put your key in ~/.netrc
 machine your_jira_server.atlassian.net
 login <YOUR JIRA EMAIL>
 password <YOUR API KEY>
-```
-
-### Install this script on your path
-
-```
-cp bugs.sh ~/bin/bugs
 ```
 
 ### Add epics list to ~/.quarter
