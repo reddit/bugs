@@ -13,7 +13,7 @@ We recommend using the Jira UI itself to create the Epics.
 
 We recommend you do this to get deeper and richer information in the Epic description before starting the quarter. Treat is the one "source of truth" for that area of work. Link out to the important design docs, and other resources. Then treat the tasks underneath them as rather lightweight, mostly just a summary and perhaps some comments / links out to related PRs.
 
-## List your epics for bugs
+## Tell bugs about your epics
 
 Then put your team's epics for this quarter (or period, or whatever) in `.quarter` in your home directory. It should look like:
 
