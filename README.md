@@ -46,15 +46,34 @@ And add new issues for this epic as things come up
 $> bugs relevance_work "Solve for foobar in the UI"
 ```
 
-Run `bugs help` for more info.
+We have a new task
+
+```
+$> bugs relevance_work
+
+KEY		STATUS	SUMMARY
+SOLR-2374	Done	Fix crash in LTR plugin
+SOLR-2409	Done	Fix issue with edismax query parser
+SOLR-2377	To Do	Cleanup admin UI relevance section
+SOLR-2410	To Do Solve the foobar in teh UI
+```
 
 ## Update your issue progress
 
 Stakeholders usually just focus on a simple kanban views of work. TODO, In Progress, Done, Canceled, etc... Yet teams internally often have other complicated transitions. So bugs has shortcuts start / pause / etc to update issue status:
 
 ```
-bugs start TEST-1234
-bugs cancel TEST-5678 "duplicate of TEST-1234"
+bugs start SOLR-2410	
+```
+
+```
+$> bugs relevance_work
+
+KEY		STATUS	SUMMARY
+SOLR-2374	Done	Fix crash in LTR plugin
+SOLR-2409	Done	Fix issue with edismax query parser
+SOLR-2410	Started Solve the foobar in teh UI
+SOLR-2377	To Do	Cleanup admin UI relevance section
 ```
 
 These are the verbs corresponding to work:
@@ -80,8 +99,8 @@ Place this file as `.transitions` in your home directory.
 ## Create branches for issues
 
 ```
->$ bugs branch SOLR-1234 "fix the frobinator"
-On branch SOLR-1234/fix-the-frobinator
+>$ bugs branch SOLR-2410 "fix the frobinator UI"
+On branch SOLR-2410/fix-the-frobinator-ui
 ```
 
 ### Git repo shortcut - open the issue associated with the current repo branch
