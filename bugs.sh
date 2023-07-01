@@ -231,8 +231,13 @@ bug() {
     echo "Epic '$1' not found in $QUARTER_FILE"
     return 1
   fi
-  echo "Create bug in $EPIC"
-  $JIRA_COMMAND issue create -tTask --parent "$EPIC" --summary "$2"
+  if [[ $2 = *[![:space:]]* ]]; then
+    echo "Create bug in $EPIC"
+    $JIRA_COMMAND issue create -tTask --no-input --parent "$EPIC" --summary "$2"
+  else
+    echo "Please provided a title for your task"
+    return 1
+  fi
 }
 
 

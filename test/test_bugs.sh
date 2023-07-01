@@ -319,13 +319,23 @@ test_open_epic_local_dir() {
 
 test_make_new_bug() {
   ./bugs.sh proj1 "Do the thing" > /dev/null
-  assert_jira_called_with '^issue create -tTask --parent TEST-1234 --summary Do the thing'
+  assert_jira_called_with '^issue create -tTask --no-input --parent TEST-1234 --summary Do the thing'
   return $?
+}
+
+test_make_new_bug_empty_fails() {
+  ./bugs.sh proj1 " " > /dev/null
+  num_jira_commands=`wc -l < ./.last_jira_mock_args`
+  if [ $num_jira_commands -ne 0 ]; then
+    cat ./.last_jira_mock_args
+    return 1
+  fi
+  return 0
 }
 
 test_make_new_bug_with_directory_shortcut() {
   ./bugs.sh . "Do the thing" > /dev/null
-  assert_jira_called_with '^issue create -tTask --parent TEST-1236 --summary Do the thing'
+  assert_jira_called_with '^issue create -tTask --no-input --parent TEST-1236 --summary Do the thing'
   return $?
 }
 
