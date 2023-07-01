@@ -9,7 +9,9 @@ Instead of working in the Jira UI, bugs simplifies your life. It treats Jira as 
 
 ## Epic status
 
-Put your team's epics for this quarter (or period, or whatever) in `.quarter` in your home directory. It should look like:
+You first need to create Epics in the Jira UI.
+
+Then put your team's epics for this quarter (or period, or whatever) in `.quarter` in your home directory. It should look like:
 
 ```
 SOLR-2313,relevance_work
@@ -40,16 +42,16 @@ $> bugs relevance_work "Solve for foobar in the UI"
 
 Run `bugs help` for more info.
 
-## Interact with current repo
+## Interact with current git repo
 
-Create a branch for a ticket
+### Create a branch for an isuue
 
 ```
 >$ bugs branch SOLR-1234 "fix the frobinator"
 On branch SOLR-1234/fix-the-frobinator
 ```
 
-Open the ticket associated with the current repo branch
+### Open the issue associated with the current repo branch
 
 ```
 bugs open .
@@ -78,9 +80,9 @@ SOLR-2355   To Do       Design approval and review
 
 And if you're on a bug branch, you can get this with `bugs epic .`
 
-## Jira Issue Transitions
+## Updating Issue progress
 
-Stakeholders usually just focus on a simple kanban views of work. TODO, In Progress, Done, Canceled, etc... Yet teams internally often have other complicated transitions. So bugs has a shortcut:
+Stakeholders usually just focus on a simple kanban views of work. TODO, In Progress, Done, Canceled, etc... Yet teams internally often have other complicated transitions. So bugs has shortcuts start / pause / etc to update issue status:
 
 ```
 ./bugs start TEST-1234
@@ -103,9 +105,9 @@ complete,Review,Done
 cancel,Cancelled
 ```
 
-If you're not sure where to get these, just figure out what transitions you would use in the UI when performing a "start", etc in your Jira project, and list those here.
+If you're not sure where to get these, just figure out what transitions you would use in the UI when going from a backlog to a "start", etc in your Jira project, and list those here after 'start'.
 
-Place this file as `.transitions` in your home directory for transitions to work with your projects isuse states.
+Place this file as `.transitions` in your home directory.
 
 ## Installation
 
@@ -131,6 +133,10 @@ password <YOUR API KEY>
 ### Add epics list to ~/.quarter
 
 cat "SOLR-1234,foo-the-bar" >> ~/.quarter
+
+### Add jira state transitions to ~/.transitions
+
+(See above)
 
 ## Jira data model / project management assumptions
 
