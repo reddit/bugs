@@ -7,13 +7,13 @@ Use Jira at arms length, but keep your PM out of your hair. Opinionated way to d
 
 Instead of working in the Jira UI, bugs simplifies your life. It treats Jira as a backend for managing tasks within Epics. Each Epic with a set of tasks that go from TODO -> In Progress -> Complete. It lets you create git branches on those Epics, get Epic status, and ensure your Epics in Jira reflect reality so your PM is happy.
 
-## Creating Epics
+## Create your epics
 
 We recommend using the Jira UI itself to create the Epics.
 
 We recommend you do this to get deeper and richer information in the Epic description before starting the quarter. Treat is the one "source of truth" for that area of work. Link out to the important design docs, and other resources. Then treat the tasks underneath them as rather lightweight, mostly just a summary and perhaps some comments / links out to related PRs.
 
-## Epic status
+## List your epics for bugs
 
 Then put your team's epics for this quarter (or period, or whatever) in `.quarter` in your home directory. It should look like:
 
@@ -38,6 +38,8 @@ SOLR-2409	Done	Fix issue with edismax query parser
 SOLR-2377	To Do	Cleanup admin UI relevance section
 ```
 
+## Add new issues
+
 And add new issues for this epic as things come up
 
 ```
@@ -46,20 +48,49 @@ $> bugs relevance_work "Solve for foobar in the UI"
 
 Run `bugs help` for more info.
 
-## Interact with current git repo
+## Update your issue progress
 
-### Create a branch for an isuue
+Stakeholders usually just focus on a simple kanban views of work. TODO, In Progress, Done, Canceled, etc... Yet teams internally often have other complicated transitions. So bugs has shortcuts start / pause / etc to update issue status:
+
+```
+bugs start TEST-1234
+bugs cancel TEST-5678 "duplicate of TEST-1234"
+```
+
+These are the verbs corresponding to work:
+
+* start -> go from TODO to In Progress
+* pause -> go back to TODO
+* complete -> go to DONE
+* cancel -> cancel the task entirely
+
+To do this, we have to handle that Jira is strict about how issues get transitions. So we give bugs a little config file to know how to execute that transition. For example to start, we'll try to move the task first to "Ready" in Jira then to "Started". 
+
+```
+start,Ready,Started
+pause,Cancelled,Restarted
+complete,Review,Done
+cancel,Cancelled
+```
+
+If you're not sure where to get these, just figure out what transitions you would use in the UI when going from a backlog to a "start", etc in your Jira project, and list those here after 'start'. Once you have this for one project, you can share around to your teammates.
+
+Place this file as `.transitions` in your home directory.
+
+## Create branches for issues
 
 ```
 >$ bugs branch SOLR-1234 "fix the frobinator"
 On branch SOLR-1234/fix-the-frobinator
 ```
 
-### Open the issue associated with the current repo branch
+### Git repo shortcut - open the issue associated with the current repo branch
 
 ```
 bugs open .
 ```
+
+### Open / list epic for current repo
 
 If not on a bug branch, open any epic sharing a name with the current repo (ignoring -,\_, whitespace)
 
@@ -84,34 +115,6 @@ SOLR-2355   To Do       Design approval and review
 
 And if you're on a bug branch, you can get this with `bugs epic .`
 
-## Updating Issue progress
-
-Stakeholders usually just focus on a simple kanban views of work. TODO, In Progress, Done, Canceled, etc... Yet teams internally often have other complicated transitions. So bugs has shortcuts start / pause / etc to update issue status:
-
-```
-./bugs start TEST-1234
-./bugs cancel TEST-5678 "duplicate of TEST-1234"
-```
-
-These are the verbs corresponding to work:
-
-* start -> go from TODO to In Progress
-* pause -> go back to TODO
-* complete -> go to DONE
-* cancel -> cancel the task entirely
-
-To do this, we have to handle that Jira is strict about how issues get transitions. So we give bugs a little config file to know how to execute that transition. For example to start, we'll try to move the task first to "Ready" in Jira then to "Started". 
-
-```
-start,Ready,Started
-pause,Cancelled,Restarted
-complete,Review,Done
-cancel,Cancelled
-```
-
-If you're not sure where to get these, just figure out what transitions you would use in the UI when going from a backlog to a "start", etc in your Jira project, and list those here after 'start'.
-
-Place this file as `.transitions` in your home directory.
 
 ## Installation
 
