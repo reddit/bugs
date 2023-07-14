@@ -218,6 +218,16 @@ test_branch_uses_epic_shortcut() {
 }
 
 
+test_branch_prints_name() {
+    ./bugs.sh branch "TEST-1234" foo > /dev/null
+    assert_jira_called_with "issue view TEST-1234 --plain --comments 0"
+    success=$?
+    if [ $success -ne 0 ]; then
+        return 1
+    fi
+}
+
+
 #### 
 # Jira tests
 
@@ -363,10 +373,17 @@ test_kanban_start() {
   assert_jira_called_with '^issue move TEST-1234 start 2'
   success=$?
   num_jira_commands=`wc -l < ./.last_jira_mock_args`
-  if [ $num_jira_commands -ne 2 ]; then
+  if [ $num_jira_commands -ne 3 ]; then
     return 1
   fi
   return $success
+}
+
+
+test_kanban_start_views_issue() {
+  ./bugs.sh start TEST-1234 > /dev/null
+  assert_jira_called_with "^issue view TEST-1234 --plain --comments 0"
+  return $?
 }
 
 

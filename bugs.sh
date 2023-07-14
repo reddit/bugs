@@ -304,6 +304,17 @@ fuzzy_issue_open() {
     fi
 }
 
+
+acting_on_issue() {
+  issue=$1
+  action=$2
+  title=$($JIRA_COMMAND issue view "$issue" --plain --comments 0 | sed -n 4,4p)
+  echo "🚀 $action $issue:"
+  echo "$title"
+}
+
+
+
 branch() {
   issue=`epic_from_shortcut "$1"`
   success=$?
@@ -330,6 +341,7 @@ branch() {
     whitespace_replaced=`echo $2 | sed 's/ /-/g'`
     branch_name="$branch_name/$whitespace_replaced"
   fi
+  acting_on_issue "$issue" "Branching"
   $GIT_COMMAND checkout -b "$branch_name"
   $GIT_COMMAND status
 }
@@ -351,6 +363,7 @@ transition_issue() {
   fi
 
   printf '\n' | $JIRA_COMMAND issue comment add $issue "$comment"
+  title=$($JIRA_COMMAND issues view SREL-1234 --plain --comments 0 | sed -n 4,4p)
 }
 
 
@@ -368,12 +381,14 @@ start_issue() {
   transitions=("Ready" "Started")
   transitions=$(get_transitions_for 'start')
   transition_issue $1 "$transitions" "$2"
+  acting_on_issue $1 "Starting"
 }
 
 pause_issue() {
   transitions=("Cancelled" "Restarted")
   transitions=$(get_transitions_for 'pause')
   transition_issue $1 "$transitions" "$2"
+  acting_on_issue $1 "Pausing"
 }
 
 
@@ -381,6 +396,7 @@ complete_issue() {
   transitions=("Cancelled" "Restarted")
   transitions=$(get_transitions_for 'complete')
   transition_issue $1 "$transitions" "$2"
+  acting_on_issue $1 "Completing"
 }
 
 
@@ -388,6 +404,7 @@ cancel_issue() {
   transitions=("Cancelled")
   transitions=$(get_transitions_for 'cancel')
   transition_issue $1 "$transitions" "$2"
+  acting_on_issue $1 "Canceling"
 }
 
 
