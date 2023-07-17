@@ -439,7 +439,7 @@ print_help() {
   echo "    branch - create a branch for an issue"
   echo "    scratch - add, remove, or list scratch notes"
   echo "    quarter - list the current quarter's epics"
-  echo "    start / pause / complete / cancel - transition an issue (see transitions)"
+  echo "    start / pause / complete / cancel / block - transition an issue (see transitions)"
   echo "    help - this help"
   echo ""
   echo "  command shortcuts:"
@@ -475,6 +475,7 @@ print_help() {
   echo "      pause,Cancelled,Restarted  <- 'bugs pause' goes to Cancelled then Restarted"
   echo "      complete,Review,Done"
   echo "      cancel,Cancelled"
+  echo "      block,Blocked"
 
 }
 
@@ -512,6 +513,8 @@ elif [[ $1 == "pause" ]]; then
   pause_issue "$2" "$3"
 elif [[ $1 == "block" ]]; then
   block_issue "$2" "$3"
+elif [[ $1 == "unblock" ]]; then
+  pause_issue "$2" "$3"
 elif [[ $1 == "open" ]]; then
   open_epic "$2" "$1" "$3"
 # Scratch TODO
