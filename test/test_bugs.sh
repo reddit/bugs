@@ -21,6 +21,7 @@ fixtures() {
     echo "complete,Complete 1,Complete 2" >> .transitions
     echo "pause,pause1,pause2" >> .transitions
     echo "cancel,killitwithfire" >> .transitions
+    echo "block,panic" >> .transitions
 
     touch .last_jira_mock_args
     touch .last_editor_mock_args
@@ -412,6 +413,12 @@ test_kanban_complete() {
   ./bugs.sh complete TEST-1234
   assert_jira_called_with '^issue move TEST-1234 Complete 1'
   assert_jira_called_with '^issue move TEST-1234 Complete 2'
+  return $?
+}
+
+test_kanban_block() {
+  ./bugs.sh block TEST-1234
+  assert_jira_called_with '^issue move TEST-1234 panic'
   return $?
 }
 
