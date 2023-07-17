@@ -385,26 +385,29 @@ start_issue() {
 }
 
 pause_issue() {
-  transitions=("Cancelled" "Restarted")
+  acting_on_issue $1 "Pausing"
   transitions=$(get_transitions_for 'pause')
   transition_issue $1 "$transitions" "$2"
-  acting_on_issue $1 "Pausing"
 }
 
 
 complete_issue() {
-  transitions=("Cancelled" "Restarted")
+  acting_on_issue $1 "Completing"
   transitions=$(get_transitions_for 'complete')
   transition_issue $1 "$transitions" "$2"
-  acting_on_issue $1 "Completing"
 }
 
 
 cancel_issue() {
-  transitions=("Cancelled")
+  acting_on_issue $1 "Canceling"
   transitions=$(get_transitions_for 'cancel')
   transition_issue $1 "$transitions" "$2"
-  acting_on_issue $1 "Canceling"
+}
+
+block_issue() {
+  acting_on_issue $1 "Block..."
+  transitions=$(get_transitions_for 'block')
+  transition_issue $1 "$transitions" "$2"
 }
 
 
@@ -436,7 +439,7 @@ print_help() {
   echo "    branch - create a branch for an issue"
   echo "    scratch - add, remove, or list scratch notes"
   echo "    quarter - list the current quarter's epics"
-  echo "    start / pause / complete / cancel - transition an issue (see transitions)"
+  echo "    start / pause / complete / cancel / block - transition an issue (see transitions)"
   echo "    help - this help"
   echo ""
   echo "  command shortcuts:"
@@ -472,6 +475,7 @@ print_help() {
   echo "      pause,Cancelled,Restarted  <- 'bugs pause' goes to Cancelled then Restarted"
   echo "      complete,Review,Done"
   echo "      cancel,Cancelled"
+  echo "      block,Blocked"
 
 }
 
@@ -506,6 +510,10 @@ elif [[ $1 == "complete" ]]; then
 elif [[ $1 == "cancel" ]]; then
   cancel_issue "$2" "$3"
 elif [[ $1 == "pause" ]]; then
+  pause_issue "$2" "$3"
+elif [[ $1 == "block" ]]; then
+  block_issue "$2" "$3"
+elif [[ $1 == "unblock" ]]; then
   pause_issue "$2" "$3"
 elif [[ $1 == "open" ]]; then
   open_epic "$2" "$1" "$3"
