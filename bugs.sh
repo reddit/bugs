@@ -10,6 +10,7 @@ QUARTER_FILE=".quarter"
 TRANSITIONS_FILE=".transitions"
 SCRATCH_FILE=".scratch"
 NET_RC_FILE=".netrc"
+DISPLAY_CONFIG_FILE=".display"
 
 if [[ -f "jira_mock" ]]; then
   JIRA_COMMAND="./jira_mock"
@@ -43,9 +44,10 @@ fi
 
 # Prod mode, we look in home dir
 if [[ ! -f "$QUARTER_FILE" ]]; then
-  QUARTER_FILE="$HOME/.quarter"
-  SCRATCH_FILE="$HOME/.scratch"
-  TRANSITIONS_FILE="$HOME/.transitions"
+  QUARTER_FILE="$HOME/.bugs/quarter"
+  SCRATCH_FILE="$HOME/.bugs/scratch"
+  TRANSITIONS_FILE="$HOME/.bugs/transitions"
+  DISPLAY_CONFIG_FILE="$HOME/.bugs/display"
   NET_RC_FILE="$HOME/.netrc"
 fi
 
@@ -69,7 +71,7 @@ squish_string() {
   str=${str//_/}
   echo "$str" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]'
 }
-
+mkdir -p "$HOME/.bugs"
 # Read file line by line
 while IFS=',' read -r col1 col2; do
     issues+=("$col1")
@@ -150,7 +152,35 @@ if [[ -z "$JIRA_HOST" || -z "$JIRA_USER" || -z "$JIRA_PASS" ]]; then
   exit 1
 fi
 
+epic_display_fields="summary"
+epic_display_columns="key,status,summary"
+epic_display_orderby="status"
+
+parse_display() {
+  if [[ ! -f "$DISPLAY_CONFIG_FILE" ]]; then
+    return
+  fi
+  while read -r line; do
+    # Skip comments and empty lines
+    if [[ "$line" =~ ^([[:space:]]*#.*)?$ ]]; then
+      continue
+    fi
+
+    # Extract epic_display_fields and epic_display_columns properties
+    if [[ "$line" =~ ^epic_display_fields=(.*)$ ]]; then
+      epic_display_fields="${BASH_REMATCH[1]}"
+    elif [[ "$line" =~ ^epic_display_columns=(.*)$ ]]; then
+      epic_display_columns="${BASH_REMATCH[1]}"
+    elif [[ "$line" =~ ^epic_display_orderby=(.*)$ ]]; then
+      epic_display_orderby="${BASH_REMATCH[1]}"
+    fi
+  done < "$DISPLAY_CONFIG_FILE"
+}
+
+parse_display
+
 # PART TWO UTILS :)
+
 
 
 slugify() {
@@ -248,14 +278,18 @@ quarter() {
 epic() {
   epic=`epic_from_shortcut "$1"`
 
-  issue_json=$(view_issue "$epic" "summary,duedate")
+  issue_json=$(view_issue "$epic" "$epic_display_fields")
   echo "************"
-  summary=$(echo "$issue_json" | jq -r '.summary')
-  duedate=$(echo "$issue_json" | jq -r '.duedate')
-  echo "🚀 $epic: $summary"
-  echo "⏰ Due $duedate"
+  # For each field, comma separated
+  for field in $(echo $epic_display_fields | sed "s/,/ /g"); do
+    # Print the field name
+    echo -n "$field: "
+    # Print the field value
+    echo "$issue_json" | jq -r ".[\"$field\"]"
+  done
+  echo "************"
 
-  $JIRA_COMMAND epic list "$epic" --plain --columns key,status,summary --order-by status
+  $JIRA_COMMAND epic list "$epic" --plain --columns $epic_display_columns --order-by $epic_display_orderby 
   if [[ $? != 0 ]]; then
     echo "Epic '$1' not found"
   fi
