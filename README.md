@@ -152,7 +152,7 @@ brew install bugs
 
 [Get an API key, put it somewhere safe](https://github.com/ankitpokhrel/jira-cli#cloud-server).
 
-Put your key in ~/.netrc
+IMPORTANT - use the ~/.netrc file to store your credentials
 
 ```
 machine your_jira_server.atlassian.net
