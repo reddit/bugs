@@ -8,6 +8,9 @@ fixtures() {
     cp test/command_mock.sh jira_mock
     cp test/command_mock.sh editor_mock
     cp test/command_mock.sh git_mock
+    cp test/command_mock.sh jq_mock
+    cp test/command_mock.sh curl_mock
+
     echo "TEST-1234,proj1" >> .quarter
     echo "TEST-1235,proj2" >> .quarter
     echo "TEST-1236,$current_dir" >> .quarter
@@ -23,6 +26,11 @@ fixtures() {
     echo "cancel,killitwithfire" >> .transitions
     echo "block,panic" >> .transitions
 
+    # .netrc file
+    echo "machine example.jira.com" >> .netrc
+    echo "login bugs" >> .netrc
+    echo "password bugs" >> .netrc
+
     touch .last_jira_mock_args
     touch .last_editor_mock_args
     touch .last_git_mock_args
@@ -32,12 +40,15 @@ clean_fixtures() {
     rm -f ./jira_mock
     rm -f ./editor_mock
     rm -f ./git_mock
+    rm -f ./.netrc
     rm -f ./.quarter
     rm -f ./.transitions
     rm -f ./.scratch
     rm -f ./.last_jira_mock_args
     rm -f ./.last_git_mock_args
     rm -f ./.last_editor_mock_args
+    rm -f ./.last_curl_mock_args
+    rm -f ./.last_jq_mock_args
 }
 
 
@@ -63,6 +74,14 @@ assert_editor_called_with() {
 
 assert_git_called_with() {
     assert_cmd_called_with "git_mock" "$1"
+}
+
+assert_curl_called_with() {
+    assert_cmd_called_with "curl_mock" "$1"
+}
+
+assert_jq_called_with() {
+    assert_cmd_called_with "jq_mock" "$1"
 }
 
 
@@ -234,6 +253,11 @@ test_branch_prints_name() {
 
 test_view_epic() {
   ./bugs.sh TEST-1234 > /dev/null
+  assert_curl_called_with "^-s -u bugs:bugs -X GET -H Content-Type: application/json https://example.jira.com/rest/api/2/issue/TEST-1234?fields=summary,duedate"
+  success=$?
+  if [ $success -ne 0 ]; then
+      return 1
+  fi
   assert_jira_called_with "^epic list TEST-1234"
   return $?
 }
