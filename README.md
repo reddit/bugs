@@ -15,7 +15,7 @@ We recommend you do this to get deeper and richer information in the Epic descri
 
 ## Tell bugs about your epics
 
-Then put your team's epics for this quarter (or period, or whatever) in `.quarter` in your home directory. It should look like:
+Then put your team's epics for this quarter (or period, or whatever) in `.bugs/quarter` in your home directory. It should look like:
 
 ```
 SOLR-2313,relevance_work
@@ -98,7 +98,7 @@ cancel,Cancelled
 
 If you're not sure where to get these, just figure out what transitions you would use in the UI when going from a backlog to a "start", etc in your Jira project, and list those here after 'start'. Once you have this for one project, you can share around to your teammates.
 
-Place this file as `.transitions` in your home directory.
+Place this file as `.bugs/transitions` in your home directory.
 
 ## Create branches for issues
 
@@ -160,13 +160,25 @@ login <YOUR JIRA EMAIL>
 password <YOUR API KEY>
 ```
 
-### Add epics list to ~/.quarter
+### Add epics list to ~/.bugs/quarter
 
-cat "SOLR-1234,foo-the-bar" >> ~/.quarter
+cat "SOLR-1234,foo-the-bar" >> ~/.bugs/quarter
 
-### Add jira state transitions to ~/.transitions
+### (Optionally) Add jira state transitions to ~/.bugs/transitions
+
+To have transitions work, add how bugs should execute issue transitions.
 
 (See above)
+
+### (Optionally) Add how you want epics displayed
+
+To control epic display, create a file ~/.bugs/display controlling the epic metadata to show, the columns to show for the underlying issues, and the sort order of issues.
+
+```
+epic_display_fields=summary,duedate
+epic_display_columns=key,status,summary,priority
+epic_display_orderby=status
+```
 
 ## Jira data model / project management assumptions
 

@@ -30,6 +30,12 @@ fixtures() {
     echo "machine example.jira.com" >> .netrc
     echo "login bugs" >> .netrc
     echo "password bugs" >> .netrc
+    
+    # How epics are displayed
+    echo "epic_display_fields=summary,description" >> .display
+    echo "epic_display_columns=key,priority,summary" >> .display
+    echo "epic_display_orderby=priority" >> .display
+
 
     touch .last_jira_mock_args
     touch .last_editor_mock_args
@@ -44,6 +50,7 @@ clean_fixtures() {
     rm -f ./.quarter
     rm -f ./.transitions
     rm -f ./.scratch
+    rm -f ./.display
     rm -f ./.last_jira_mock_args
     rm -f ./.last_git_mock_args
     rm -f ./.last_editor_mock_args
@@ -268,11 +275,32 @@ test_branch_prints_name() {
 
 test_view_epic() {
   ./bugs.sh TEST-1234 > /dev/null
-  assert_curl_called_with "^-s -u bugs:bugs -X GET -H Content-Type: application/json https://example.jira.com/rest/api/2/issue/TEST-1234?fields=summary,duedate"
-  success=$?
-  if [ $success -ne 0 ]; then
-      return 1
-  fi
+  assert_jira_called_with "^epic list TEST-1234"
+  return $?
+}
+
+
+test_view_epic_uses_configed_display_fields() {
+  ./bugs.sh TEST-1234 > /dev/null
+  assert_curl_called_with "^-s -u bugs:bugs -X GET -H Content-Type: application/json https://example.jira.com/rest/api/2/issue/TEST-1234?fields=summary,description"
+  return $?
+}
+
+test_view_epic_uses_configed_columns() {
+  ./bugs.sh TEST-1234 > /dev/null
+  assert_jira_called_with "\-\-columns key,priority,summary"
+  return $?
+}
+
+test_view_epic_uses_configed_orderby() {
+  ./bugs.sh TEST-1234 > /dev/null
+  assert_jira_called_with "\-\-order-by priority"
+  return $?
+}
+
+test_view_epic_no_config() {
+  rm .display
+  ./bugs.sh TEST-1234 > /dev/null
   assert_jira_called_with "^epic list TEST-1234"
   return $?
 }
