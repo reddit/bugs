@@ -199,6 +199,21 @@ test_branch_whitespace() {
 }
 
 
+test_branch_slugify() {
+    ./bugs.sh branch "TEST-111" "FOO. bar" > /dev/null
+    assert_git_called_with "^checkout -b TEST-111/foo-bar"
+    success=$?
+    if [ $success -ne 0 ]; then
+        return 1
+    fi
+    assert_git_called_with "status"
+    success=$?
+    if [ $success -ne 0 ]; then
+        return 1
+    fi
+    return $?
+}
+
 test_branch_no_message() {
     ./bugs.sh branch "TEST-111" > /dev/null
     success=$?
@@ -280,7 +295,7 @@ test_view_epic_local_dir_git_branch() {
     echo "TEST-9999/foo"
   fi'
   echo "$rev_parse_response" >> ./git_mock
-  ./bugs.sh . 
+  ./bugs.sh . > /dev/null
   assert_jira_called_with "^open TEST-9999"
   return $?
 }
@@ -434,14 +449,14 @@ test_kanban_pause() {
 }
 
 test_kanban_complete() {
-  ./bugs.sh complete TEST-1234
+  ./bugs.sh complete TEST-1234 > /dev/null
   assert_jira_called_with '^issue move TEST-1234 Complete 1'
   assert_jira_called_with '^issue move TEST-1234 Complete 2'
   return $?
 }
 
 test_kanban_block() {
-  ./bugs.sh block TEST-1234
+  ./bugs.sh block TEST-1234 > /dev/null
   assert_jira_called_with '^issue move TEST-1234 panic'
   return $?
 }

@@ -153,6 +153,11 @@ fi
 # PART TWO UTILS :)
 
 
+slugify() {
+  echo "$1" | iconv -t ascii//TRANSLIT | sed -r 's/[^a-zA-Z0-9]+/-/g' | sed -r 's/^-+\|-+$//g' | tr A-Z a-z
+}
+
+
 get_shortcut_index() {
   squished=`squish_string "$1"`
   for i in "${!shortcuts[@]}"; do
@@ -403,7 +408,7 @@ branch() {
     echo "Usage: bugs branch <jira-issue> <branch-name>"
     return 1
   else
-    whitespace_replaced=`echo $2 | sed 's/ /-/g'`
+    whitespace_replaced=`slugify "$2"`
     branch_name="$branch_name/$whitespace_replaced"
   fi
   acting_on_issue "$issue" "Branching"
