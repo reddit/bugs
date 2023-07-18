@@ -2,15 +2,21 @@
 
 # Elmer Fudd once said -- "Be vewy vewy quiet, I'm hunting bugs"
 
+# PART ONE SETUP
+#   Setting up the environment, parsing the following files
+#
 # Test files occur in local directory
 QUARTER_FILE=".quarter"
 TRANSITIONS_FILE=".transitions"
 SCRATCH_FILE=".scratch"
+NET_RC_FILE=".netrc"
 
 if [[ -f "jira_mock" ]]; then
   JIRA_COMMAND="./jira_mock"
   SCRATCH_EDITOR="./editor_mock"
   GIT_COMMAND="./git_mock"
+  JQ_COMMAND="./jq_mock"
+  CURL_COMMAND="./curl_mock"
 else
   JIRA_URL="https://github.com/ankitpokhrel/jira-cli"
   which jira > /dev/null
@@ -31,6 +37,8 @@ else
   JIRA_COMMAND="jira"
   GIT_COMMAND="git"
   SCRATCH_EDITOR=${EDITOR:-nano}
+  JQ_COMMAND="jq"
+  CURL_COMMAND="curl"
 fi
 
 # Prod mode, we look in home dir
@@ -38,6 +46,7 @@ if [[ ! -f "$QUARTER_FILE" ]]; then
   QUARTER_FILE="$HOME/.quarter"
   SCRATCH_FILE="$HOME/.scratch"
   TRANSITIONS_FILE="$HOME/.transitions"
+  NET_RC_FILE="$HOME/.netrc"
 fi
 
 
@@ -109,6 +118,40 @@ looks_like_jira_issue() {
   return 1
 }
 
+JIRA_HOST=
+JIRA_USER=
+JIRA_PASS=
+
+parse_net_rc() {
+  # Parse the .netrc file
+  while read -r line; do
+    # Skip comments and empty lines
+    if [[ "$line" =~ ^([[:space:]]*#.*)?$ ]]; then
+      continue
+    fi
+
+    # Extract machine, login, and password properties
+    if [[ "$line" =~ ^machine[[:space:]]+([^[:space:]]+) ]]; then
+      machine="${BASH_REMATCH[1]}"
+      JIRA_HOST=$machine
+    elif [[ "$line" =~ ^login[[:space:]]+([^[:space:]]+) ]]; then
+      login="${BASH_REMATCH[1]}"
+      JIRA_USER=$login
+    elif [[ "$line" =~ ^password[[:space:]]+([^[:space:]]+) ]]; then
+      password="${BASH_REMATCH[1]}"
+      JIRA_PASS=$password
+    fi
+  done < "$NET_RC_FILE"
+}
+
+parse_net_rc
+if [[ -z "$JIRA_HOST" || -z "$JIRA_USER" || -z "$JIRA_PASS" ]]; then
+  echo "No Jira credentials found in $NET_RC_FILE... failing"
+  exit 1
+fi
+
+# PART TWO UTILS :)
+
 
 get_shortcut_index() {
   squished=`squish_string "$1"`
@@ -148,6 +191,20 @@ epic_from_shortcut() {
   echo "${issues[$index]}"
 }
 
+
+acting_on_issue() {
+  issue=$1
+  action=$2
+  title=$($JIRA_COMMAND issue view "$issue" --plain --comments 0 | sed -n 4,4p)
+  echo "🚀 $action $issue:"
+  echo "$title"
+}
+
+
+
+
+# PART THREE :)
+
 bugs_bunny() {
 cat << "EOF"
                , ,
@@ -185,6 +242,14 @@ quarter() {
 
 epic() {
   epic=`epic_from_shortcut "$1"`
+
+  issue_json=$(view_issue "$epic" "summary,duedate")
+  echo "************"
+  summary=$(echo "$issue_json" | jq -r '.summary')
+  duedate=$(echo "$issue_json" | jq -r '.duedate')
+  echo "🚀 $epic: $summary"
+  echo "⏰ Due $duedate"
+
   $JIRA_COMMAND epic list "$epic" --plain --columns key,status,summary --order-by status
   if [[ $? != 0 ]]; then
     echo "Epic '$1' not found"
@@ -235,6 +300,16 @@ looks_like_command() {
   return 0
 }
 
+
+view_issue() {
+  issue=$1
+  fields=$2
+  $CURL_COMMAND -s \
+    -u "$JIRA_USER:$JIRA_PASS" \
+    -X GET \
+    -H "Content-Type: application/json" \
+    "https://$JIRA_HOST/rest/api/2/issue/$1?fields=$2" | $JQ_COMMAND .fields
+}
 
 bug() {
   EPIC=`epic_from_shortcut "$1"`
@@ -303,16 +378,6 @@ fuzzy_issue_open() {
       epic $issue
     fi
 }
-
-
-acting_on_issue() {
-  issue=$1
-  action=$2
-  title=$($JIRA_COMMAND issue view "$issue" --plain --comments 0 | sed -n 4,4p)
-  echo "🚀 $action $issue:"
-  echo "$title"
-}
-
 
 
 branch() {
