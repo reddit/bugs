@@ -91,13 +91,52 @@ assert_jq_called_with() {
     assert_cmd_called_with "jq_mock" "$1"
 }
 
-
+####
+# Just bugs / quearter
 
 test_just_bugs_echos_quarter() {
     quarter_file=`cat .quarter`
     bugs_output=`./bugs.sh` > /dev/null
     # Ensure all of quarter_file within stdout
     echo "$bugs_output" | grep -q "$quarter_file"
+    return $?
+}
+
+test_bugs_reset_quarter() {
+    echo "TEST-1234" >> test_in.txt
+    echo "proj1" >> test_in.txt
+    echo "n" >> test_in.txt
+    bugs_output=`./bugs.sh reset < test_in.txt`
+    rm test_in.txt 2> /dev/null
+    cat .quarter | grep -q "TEST-1234,proj1"
+    return $?
+}
+
+test_bugs_reset_quarter_loop() {
+    echo "TEST-1234" >> test_in.txt
+    echo "proj1" >> test_in.txt
+    echo "y" >> test_in.txt
+    echo "TEST-1235" >> test_in.txt
+    echo "proj2" >> test_in.txt
+    echo "n" >> test_in.txt
+    bugs_output=`./bugs.sh reset < test_in.txt`
+    rm test_in.txt 2> /dev/null
+    cat .quarter | grep -q "TEST-1234,proj1"
+    success=$?
+    if [ $success -ne 0 ]; then
+        return $success
+    fi
+    cat .quarter | grep -q "TEST-1235,proj2"
+    return $?
+}
+
+test_bugs_no_quarter_resets() {
+    rm .quarter
+    echo "TEST-1234" >> test_in.txt
+    echo "proj1" >> test_in.txt
+    echo "n" >> test_in.txt
+    bugs_output=`./bugs.sh < test_in.txt`
+    cat .quarter | grep -q "TEST-1234,proj1"
     return $?
 }
 
@@ -414,7 +453,7 @@ test_make_new_bug_epic_shortcut() {
 }
 
 test_make_new_bug_explicit_command_epic_shortcut() {
-  ./bugs.sh create . "Do the thing"
+  ./bugs.sh create . "Do the thing" > /dev/null
   assert_jira_called_with '^issue create -tTask --no-input --parent TEST-1236 --summary Do the thing'
   return $?
 }
