@@ -7,9 +7,9 @@ Keep your PM out of your hair. Command line tool for working with Jira Epics and
 
 ## Create your epics
 
-We recommend using the Jira UI itself to create the Epics.
+Use the Jira UI itself to create the Epics.
 
-We recommend you do this to get deeper and richer information in the Epic description before starting the quarter. Treat is the one "source of truth" for that area of work. Link out to the important design docs, and other resources. Then treat the tasks underneath them as rather lightweight, mostly just a summary and perhaps some comments / links out to related PRs.
+Add deeper and richer information in the Epic description before starting the quarter. Treat is the one "source of truth" for that area of work. Link out to the important design docs, and other resources. Then attach tasks as needed via `bugs` (see below).
 
 ## Tell bugs about your epics
 
