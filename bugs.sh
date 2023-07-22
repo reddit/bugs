@@ -135,16 +135,20 @@ JIRA_PASS=
 parse_net_rc() {
   # Parse the .netrc file
   if [[ ! -f "$NET_RC_FILE" ]]; then
+    echo "Must be your first time..."
+    echo "Lets setup your Jira credentials to use bugs"
+    echo ""
     echo "Enter jira host (eg jira.example.com): "
     read JIRA_HOST
     echo "Enter jira username (eg bill.gates@microsoft.com): "
     read JIRA_USER
     echo "Enter jira api token: "
     echo "See: https://id.atlassian.com/manage-profile/security/api-tokens"
-    read -s JIRA_PASS
+    read JIRA_PASS
     echo "machine $JIRA_HOST" > "$NET_RC_FILE"
     echo "  login $JIRA_USER" >> "$NET_RC_FILE"
     echo "  password $JIRA_PASS" >> "$NET_RC_FILE"
+    chmod 600 "$NET_RC_FILE"
     return
   fi
   while read -r line; do
@@ -293,6 +297,7 @@ EOF
 }
 
 reset_quarter() {
+  echo "--------------------------------------------------"
   echo "This seems to be the first time you've used bugs!"
   echo "or you're restarting"
   echo ""
@@ -327,6 +332,7 @@ reset_quarter() {
     echo "Continue? $more"
   done
   echo "You can edit this file later: $QUARTER_FILE"
+  echo "Or run 'bugs reset' to start over"
 }
 
 quarter() {
@@ -648,21 +654,22 @@ print_help() {
   echo ""
   echo " Setup:"
   echo " ------"
-  echo "  Just run 'bugs' and to configure jira epics"
+  echo "  Just run 'bugs' and to configure jira auth + epics"
   echo ""
-  echo "  Transitions - tell us how issues are transitioned:"
-  echo "    Jira projects limit issue state transitions. "
-  echo "    For example, issues in TODO can only go to Ready. Only then can you click Started."
+  eche " Transitions:"
+  echo " ------------"
+  echo "   Jira projects limit issue state transitions. "
+  echo "   For example, issues in TODO can only go to Ready. Only then can you click Started."
   echo ""
-  echo "    We try to help by automating each transition when you want to 'start', 'pause', etc." 
+  echo "   We try to help by automating each transition when you want to 'start', 'pause', etc." 
   echo ""
-  echo "    Add your steps to .transitions file in home"
+  echo "   Add your steps to transitions file at ~/.bugs/transitions"
   echo ""
-  echo "      start,Ready,Started  <- 'bugs start' first changes issue to Ready then Started"
-  echo "      pause,Cancelled,Restarted  <- 'bugs pause' goes to Cancelled then Restarted"
-  echo "      complete,Review,Done"
-  echo "      cancel,Cancelled"
-  echo "      block,Blocked"
+  echo "     start,Ready,Started  <- 'bugs start' first changes issue to Ready then Started"
+  echo "     pause,Cancelled,Restarted  <- 'bugs pause' goes to Cancelled then Restarted"
+  echo "     complete,Review,Done"
+  echo "     cancel,Cancelled"
+  echo "     block,Blocked"
 
 }
 
