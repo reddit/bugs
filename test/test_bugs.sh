@@ -401,6 +401,22 @@ test_make_new_bug() {
   return $?
 }
 
+test_make_new_bug_epic_shortcut() {
+  ./bugs.sh . "Do the thing" > /dev/null
+  assert_jira_called_with '^issue create -tTask --no-input --parent TEST-1236 --summary Do the thing'
+  return $?
+}
+
+test_make_new_bug_uses_folder_shortcut_on_branch() {
+  rev_parse_response='if [[ "$@" == "rev-parse --abbrev-ref HEAD" ]]; then
+    echo "TEST-9999/foo"
+  fi'
+  echo "$rev_parse_response" >> ./git_mock
+  ./bugs.sh . "Do the thing" > /dev/null
+  assert_jira_called_with '^issue create -tTask --no-input --parent TEST-1236 --summary Do the thing'
+  return $?
+}
+
 test_make_new_bug_empty_fails() {
   ./bugs.sh proj1 " " > /dev/null
   num_jira_commands=`wc -l < ./.last_jira_mock_args`

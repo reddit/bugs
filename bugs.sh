@@ -351,11 +351,18 @@ view_issue() {
 }
 
 bug() {
-  EPIC=`epic_from_shortcut "$1"`
+  # Always try to get an epic
+  EPIC=$(epic_from_shortcut "$1")
   success=$?
   if [[ $success != 0 ]]; then
-    echo "Epic '$1' not found in $QUARTER_FILE"
-    return 1
+    echo "Epic '$1' not found in $QUARTER_FILE for $EPIC"
+    EPIC=$(best_ticket_for_folder "epic")
+    EPIC=$(epic_from_shortcut "$EPIC")
+    success=$?
+    if [[ $success != 0 ]]; then
+      echo "No epic found in $QUARTER_FILE for $PWD"
+      return 1
+    fi
   fi
   summary="$2"
   looks_like_command "$summary"
@@ -589,7 +596,6 @@ print_help() {
 # that shortcut, then it will use that epic when you do:
 #  bugs .
 if [[ $2 == "." ]]; then
-  # and open the epic
   prefer_epic=""
   # User explicitly wants an epic, dont use branch name
   if [[ $1 == "epic" ]]; then
@@ -597,7 +603,6 @@ if [[ $2 == "." ]]; then
   fi
   set -- $1 `best_ticket_for_folder $prefer_epic`
 elif [[ $1 == "." ]]; then
-  # and open the epic
   set -- `best_ticket_for_folder` "$2"
 fi
 
