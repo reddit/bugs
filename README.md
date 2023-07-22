@@ -66,38 +66,16 @@ SOLR-2377	To Do	Cleanup admin UI relevance section
 
 Now you can give a handy report to your PM.
 
-### Map your Jira states to bugs transitions
-
-These are the verbs corresponding to work:
-
-* start -> go from TODO to In Progress
-* pause -> go back to TODO
-* complete -> go to DONE
-* cancel -> cancel the task entirely
-* block -> indicate an issue as blocked
-
-To do this, we have to handle that Jira is strict about how issues get transitions. So we give bugs a little config file to know how to execute that transition. For example to start, we'll try to move the task first to "Ready" in Jira then to "Started". 
-
-```
-start,Ready,Started
-pause,Cancelled,Restarted
-complete,Review,Done
-cancel,Cancelled
-block,Blocked
-```
-
-If you're not sure where to get these, just figure out what transitions you would use in the UI when going from a backlog to a "start", etc in your Jira project, and list those here after 'start'. Once you have this for one project, you can share around to your teammates.
-
-Place this file as `.bugs/transitions` in your home directory.
-
 ## Create branches for issues
+
+You can start work on a branch with `bugs branch` and it'll help create a useful name for you.
 
 ```
 >$ bugs branch SOLR-2410 "fix the frobinator UI"
 On branch SOLR-2410/fix-the-frobinator-ui
 ```
 
-### Git repo shortcut - open the issue associated with the current repo branch
+### Open the issue associated with the current repo branch
 
 ```
 bugs open .
@@ -139,11 +117,21 @@ brew install bugs
 
 Running `bugs` the first time will ask you for your jira host, username, and an [API Token](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/). As well as ask you for your epics.
 
-### (Optionally) Add jira state transitions to ~/.bugs/transitions
+### (Optionally) Configure transitions
 
-To have transitions work, add how bugs should execute issue transitions.
+You can ignore/use whichever transitions you need. Transition commands just execute the steps you do when you go to the Jira UI and move an issue around a board. See [moves/transitions](https://github.com/ankitpokhrel/jira-cli#movetransition).
 
-(See above)
+To have transitions work, tell bugs how to execute issue transitions in the config file ~/.bugs/transitions.
+
+```
+start,Ready,Started
+pause,Cancelled,Restarted
+complete,Review,Done
+cancel,Cancelled
+block,Blocked
+```
+
+If you're not sure where to get these, just figure out what transitions you would use in the UI when going from a backlog to a "start", etc in your Jira project, and list those here after 'start'. Once you have this for one project, you can share around to your teammates.
 
 ### (Optionally) Add how you want epics displayed
 
