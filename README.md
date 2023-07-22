@@ -7,17 +7,11 @@ Keep your PM out of your hair. Command line tool for working with Jira Epics and
 
 ## Create your epics
 
-Use the Jira UI itself to create the Epics.
+Assumping you've created Epics (in Jira itself), run `bugs`. Running the first time will ask you about your epics and ask for a shorcut.
 
-Add deeper and richer information in the Epic description before starting the quarter. Treat is the one "source of truth" for that area of work. Link out to the important design docs, and other resources. Then attach tasks as needed via `bugs` (see below).
+Bugs will prompt you for an epic, like `SOLR-2313` and let you enter a handy shortcut `relevance_work`
 
-## Tell bugs about your epics
-
-Run `bugs` for the first time, it'll ask you about epics. (or run `bugs reset` to force it to get epics from you)
-
-It'll prompt you for an epic, like `SOLR-2313` and a handy shortcut `relevance_work`
-
-Here you have the epic name, and a shortcut - a name you choose to make it easier to remember the epic.
+## Navigate epics
 
 Now use `bugs` to help you navigate:
 
@@ -38,7 +32,7 @@ And add new issues for this epic as things come up
 $> bugs create relevance_work "Solve for foobar in the UI"
 ```
 
-We have a new task
+We have a new task:
 
 ```
 $> bugs relevance_work
@@ -52,11 +46,13 @@ SOLR-2410	To Do	Solve the foobar in the UI
 
 ## Update your issue progress
 
-Stakeholders usually just focus on a simple kanban views of work. TODO, In Progress, Done, Canceled, etc... Yet teams internally often have other complicated transitions. So bugs has shortcuts start / pause / etc to update issue status:
+Bugs has shortcuts start / pause / block / etc to update issue status. You need to map these to your own Jira transitions (see below).
 
 ```
 bugs start SOLR-2410	
 ```
+
+Now the task is started:
 
 ```
 $> bugs relevance_work
@@ -78,6 +74,7 @@ These are the verbs corresponding to work:
 * pause -> go back to TODO
 * complete -> go to DONE
 * cancel -> cancel the task entirely
+* block -> indicate an issue as blocked
 
 To do this, we have to handle that Jira is strict about how issues get transitions. So we give bugs a little config file to know how to execute that transition. For example to start, we'll try to move the task first to "Ready" in Jira then to "Started". 
 
@@ -86,6 +83,7 @@ start,Ready,Started
 pause,Cancelled,Restarted
 complete,Review,Done
 cancel,Cancelled
+block,Blocked
 ```
 
 If you're not sure where to get these, just figure out what transitions you would use in the UI when going from a backlog to a "start", etc in your Jira project, and list those here after 'start'. Once you have this for one project, you can share around to your teammates.
@@ -130,7 +128,6 @@ SOLR-2355   To Do       Design approval and review
 
 And if you're on a bug branch, you can get this with `bugs epic .`
 
-
 ## Installation
 
 ### With brew
@@ -140,7 +137,7 @@ brew tap reddit/bugs
 brew install bugs
 ```
 
-Running `bugs` the first time will ask you for your jira host, username, and an [API Token](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)
+Running `bugs` the first time will ask you for your jira host, username, and an [API Token](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/). As well as ask you for your epics.
 
 ### (Optionally) Add jira state transitions to ~/.bugs/transitions
 
@@ -156,6 +153,14 @@ To control epic display, create a file ~/.bugs/display controlling the epic meta
 epic_display_fields=summary,duedate
 epic_display_columns=key,status,summary,priority
 epic_display_orderby=status
+```
+
+### Blow away jira credentials
+
+If at any time you need to recreate jira credentials, simply remove the `.netrc` file in your home directory.
+
+```
+rm ~/.netrc
 ```
 
 ## Jira data model / project management assumptions
