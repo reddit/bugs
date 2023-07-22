@@ -43,12 +43,17 @@ else
 fi
 
 # Prod mode, we look in home dir
-if [[ ! -f "$QUARTER_FILE" ]]; then
+if [[ ! -f "jira_mock" ]]; then
   QUARTER_FILE="$HOME/.bugs/quarter"
   SCRATCH_FILE="$HOME/.bugs/scratch"
   TRANSITIONS_FILE="$HOME/.bugs/transitions"
   DISPLAY_CONFIG_FILE="$HOME/.bugs/display"
   NET_RC_FILE="$HOME/.netrc"
+fi
+
+# No quarter file? Change to reset
+if [[ ! -f "$QUARTER_FILE" ]]; then
+  set -- "reset"
 fi
 
 
@@ -73,10 +78,13 @@ squish_string() {
 }
 mkdir -p "$HOME/.bugs"
 # Read file line by line
-while IFS=',' read -r col1 col2; do
-    issues+=("$col1")
-    shortcuts+=(`squish_string "$col2"`)
-done < "$QUARTER_FILE"
+
+if [ -f "$QUARTER_FILE" ]; then
+  while IFS=',' read -r col1 col2; do
+      issues+=("$col1")
+      shortcuts+=(`squish_string "$col2"`)
+  done < "$QUARTER_FILE"
+fi
 
 # Create a .transitions file if it doesn't exist
 if [ ! -f "$TRANSITIONS_FILE" ]; then
@@ -269,6 +277,43 @@ cat << "EOF"
             snd (((____/     \ \  )
                               '.\_)
 EOF
+}
+
+reset_quarter() {
+  echo "This seems to be the first time you've used bugs!"
+  echo "or you're restarting"
+  echo ""
+  echo "Welcome!"
+  echo ""
+  echo "Please tell me about your epics, with a shorcut"
+  epic=""
+  mv $QUARTER_FILE $QUARTER_FILE.bak 2> /dev/null
+  more="y"
+  while [[ $more == "y" ]] ; do
+
+    success=1
+    while [[ $success != 0 ]] ; do
+      echo "Enter a Jira number (ie TEST-1234):"
+      read epic
+      looks_like_jira_issue $epic
+      success=$?
+      if [ $success != 0 ]; then
+        echo "That doesn't look like a Jira issue, try again"
+      fi
+    done
+
+    echo "Now enter a shortcut for $epic (ie flux-proj):"
+    read shortcut
+    if [ -z "$shortcut" ]; then
+      shortcut=`slugify "$epic"`
+    fi
+    echo "$epic,$shortcut" >> $QUARTER_FILE
+    echo "Added $epic,$shortcut"
+    echo "More (y/n)?"
+    read more
+    echo "Continue? $more"
+  done
+  echo "You can edit this file later: $QUARTER_FILE"
 }
 
 quarter() {
@@ -665,6 +710,8 @@ elif [[ $1 == "branch" ]]; then
   branch "$2" "$3"
 elif [[ $1 == "help" ]]; then
   print_help
+elif [[ $1 == "reset" ]]; then
+  reset_quarter
 elif [[ $1 != "" ]]; then
   if [[ $2 == "" ]]; then
     fuzzy_issue_open "$1"
