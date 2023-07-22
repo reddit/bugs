@@ -134,6 +134,19 @@ JIRA_PASS=
 
 parse_net_rc() {
   # Parse the .netrc file
+  if [[ ! -f "$NET_RC_FILE" ]]; then
+    echo "Enter jira host (eg jira.example.com): "
+    read JIRA_HOST
+    echo "Enter jira username (eg bill.gates@microsoft.com): "
+    read JIRA_USER
+    echo "Enter jira api token: "
+    echo "See: https://id.atlassian.com/manage-profile/security/api-tokens"
+    read -s JIRA_PASS
+    echo "machine $JIRA_HOST" > "$NET_RC_FILE"
+    echo "  login $JIRA_USER" >> "$NET_RC_FILE"
+    echo "  password $JIRA_PASS" >> "$NET_RC_FILE"
+    return
+  fi
   while read -r line; do
     # Skip comments and empty lines
     if [[ "$line" =~ ^([[:space:]]*#.*)?$ ]]; then
