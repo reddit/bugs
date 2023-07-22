@@ -401,8 +401,20 @@ test_make_new_bug() {
   return $?
 }
 
+test_make_new_bug_explicit_command() {
+  ./bugs.sh create proj1 "Do the thing" > /dev/null
+  assert_jira_called_with '^issue create -tTask --no-input --parent TEST-1234 --summary Do the thing'
+  return $?
+}
+
 test_make_new_bug_epic_shortcut() {
   ./bugs.sh . "Do the thing" > /dev/null
+  assert_jira_called_with '^issue create -tTask --no-input --parent TEST-1236 --summary Do the thing'
+  return $?
+}
+
+test_make_new_bug_explicit_command_epic_shortcut() {
+  ./bugs.sh create . "Do the thing"
   assert_jira_called_with '^issue create -tTask --no-input --parent TEST-1236 --summary Do the thing'
   return $?
 }

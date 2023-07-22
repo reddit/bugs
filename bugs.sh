@@ -372,6 +372,7 @@ bug() {
     echo " bugs expects: bugs <cmd> <EPIC> "
     return 1
   fi
+  echo $summary
   if [[ "$summary" = *[![:space:]]* ]]; then
     echo "Create bug in $EPIC"
     $JIRA_COMMAND issue create -tTask --no-input --parent "$EPIC" --summary "$summary"
@@ -544,23 +545,47 @@ print_help() {
   echo ""
   echo "Usages: bugs <command> FOO-1234"
   echo ""
-  echo "  commands:"
+  echo "  Commands:"
+  echo "  --------" 
   echo "    open - open an issue or epic in your browser"
   echo "    epic - list issues in an epic"
   echo "    branch - create a branch for an issue"
   echo "    scratch - add, remove, or list scratch notes"
   echo "    quarter - list the current quarter's epics"
+  echo "    create - create an issue under an epic"
   echo "    start / pause / complete / cancel / block - transition an issue (see transitions)"
   echo "    help - this help"
   echo ""
-  echo "  command shortcuts:"
-  echo "    bugs - same as quarter"
-  echo "    bugs <issue> - open an issue"
-  echo "    bugs <epic> - list epic"
-  echo "    bugs <epic> - \"foo the bar\" - create an issue under epic"
-  echo "    bugs <epic> <issue> - create a bug in an epic"
-  echo "    bugs scratch - open scratch notes"
-  echo "    bugs . - epic for the current folder if the repo corresponds to an epic"
+  echo "  Examples:"
+  echo "  --------" 
+  echo "   List epics:"
+  echo "    bugs - list epics"
+  echo ""
+  echo "   Open epic/issue in browser:"
+  echo "    bugs TEST-1234"
+  echo "    bugs open TEST-1234"
+  echo "    bugs ."
+  echo ""
+  echo "   Create issue in epic:"
+  echo "    bugs TEST-1234 \"foo the bar\""
+  echo "    bugs fluxcapacitor \"attach lightning attractor to delorean\""
+  echo "    bugs create TEST-1234 \"upgrade the microwave receiver\""
+  echo "    bugs . \"make train flux capacitor\" #"
+  echo ""
+  echo "   View epic:"
+  echo "    bugs <epic> - list epics issues"
+  echo ""
+  echo "   Branch for an issue or epic:"
+  echo "    bugs branch TEST-1234 \"fix the flux capacitor\""
+  echo ""
+  echo "   Start (pause/stop/etc) an issue:"
+  echo "    bugs start TEST-1234 \"started work\""
+  echo "    bugs start TEST-1234"
+  echo "    bugs pause TEST-1234 \"paused work\""
+  echo "    bugs block TEST-1234 \"blocked by other work\""
+  echo ""
+  echo "    (Usage of '.' tries to use either the issue of the branch "
+  echo "     or epic associated with the folder name via shortcut in .quarter)"
   echo ""
   echo ""
   echo "First time setup"
@@ -601,9 +626,9 @@ if [[ $2 == "." ]]; then
   if [[ $1 == "epic" ]]; then
     prefer_epic="epic"
   fi
-  set -- $1 `best_ticket_for_folder $prefer_epic`
+  set -- $1 `best_ticket_for_folder $prefer_epic` "$3"
 elif [[ $1 == "." ]]; then
-  set -- `best_ticket_for_folder` "$2"
+  set -- `best_ticket_for_folder` "$2" "$3"
 fi
 
 
@@ -634,7 +659,7 @@ elif [[ $1 == "quarter" ]]; then
   quarter
 elif [[ $1 == "epic" ]]; then
   epic "$2"
-elif [[ $1 == "bug" ]]; then
+elif [[ $1 == "create" ]]; then
   bug "$2" "$3"
 elif [[ $1 == "branch" ]]; then
   branch "$2" "$3"
