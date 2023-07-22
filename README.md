@@ -3,9 +3,7 @@
 
 [![Build Status](https://github.com/reddit/bugs/actions/workflows/test.yml/badge.svg)](https://github.com/reddit/bugs/actions/workflows/test.yml)
 
-Use Jira at arms length, but keep your PM out of your hair. Opinionated way to deal with Jira at the command line. (Scripts on top of [jira-cli](https://github.com/ankitpokhrel/jira-cli)).
-
-Bugs treats Jira as a backend for managing tasks within Epics. 
+Keep your PM out of your hair. Command line tool for working with Jira Epics and their issues.
 
 ## Create your epics
 
