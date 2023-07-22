@@ -5,7 +5,7 @@
 
 Use Jira at arms length, but keep your PM out of your hair. Opinionated way to deal with Jira at the command line. (Scripts on top of [jira-cli](https://github.com/ankitpokhrel/jira-cli)).
 
-Instead of working in the Jira UI, bugs simplifies your life. It treats Jira as a backend for managing tasks within Epics. Each Epic with a set of tasks that go from TODO -> In Progress -> Complete. It lets you create git branches on those Epics, get Epic status, and ensure your Epics in Jira reflect reality so your PM is happy.
+Bugs treats Jira as a backend for managing tasks within Epics. 
 
 ## Create your epics
 
@@ -15,17 +15,11 @@ We recommend you do this to get deeper and richer information in the Epic descri
 
 ## Tell bugs about your epics
 
-Then put your team's epics for this quarter (or period, or whatever) in `.bugs/quarter` in your home directory. It should look like:
+Run `bugs` for the first time, it'll ask you about epics. (or run `bugs reset` to force it to get epics from you)
 
-```
-SOLR-2313,relevance_work
-SOLR-2314,ml_model
-SOLR-2316,tools
-SOLR-2319,test_bench
-SOLR-2373,ui_filters
-```
+It'll prompt you for an epic, like `SOLR-2313` and a handy shortcut `relevance_work`
 
-Here you have the epic name, and a shortcut - a name you choose to make it easier to remember the epic. Add duplicate rows if you want multiple shortcuts.
+Here you have the epic name, and a shortcut - a name you choose to make it easier to remember the epic.
 
 Now use `bugs` to help you navigate:
 
@@ -43,7 +37,7 @@ SOLR-2377	To Do	Cleanup admin UI relevance section
 And add new issues for this epic as things come up
 
 ```
-$> bugs relevance_work "Solve for foobar in the UI"
+$> bugs create relevance_work "Solve for foobar in the UI"
 ```
 
 We have a new task
@@ -148,21 +142,7 @@ brew tap reddit/bugs
 brew install bugs
 ```
 
-### Config your API key
-
-[Get an API key, put it somewhere safe](https://github.com/ankitpokhrel/jira-cli#cloud-server).
-
-IMPORTANT - use the ~/.netrc file to store your credentials
-
-```
-machine your_jira_server.atlassian.net
-login <YOUR JIRA EMAIL>
-password <YOUR API KEY>
-```
-
-### Add epics list to ~/.bugs/quarter
-
-cat "SOLR-1234,foo-the-bar" >> ~/.bugs/quarter
+Running `bugs` the first time will ask you for your jira host, username, and an [API Token](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)
 
 ### (Optionally) Add jira state transitions to ~/.bugs/transitions
 
