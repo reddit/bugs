@@ -56,6 +56,7 @@ clean_fixtures() {
     rm -f ./.last_editor_mock_args
     rm -f ./.last_curl_mock_args
     rm -f ./.last_jq_mock_args
+    rm -f ./test_in.txt 2> /dev/null
 }
 
 
@@ -89,6 +90,18 @@ assert_curl_called_with() {
 
 assert_jq_called_with() {
     assert_cmd_called_with "jq_mock" "$1"
+}
+
+####
+# Just auth
+test_auth_setup() {
+    rm ./.netrc
+    echo "jira.hostname" >> test_in.txt
+    echo "jira.user@jira.net" >> test_in.txt
+    echo "password" >> test_in.txt
+    ./bugs.sh < test_in.txt > /dev/null
+    cat ./.netrc | grep -q "jira.hostname"
+    return $?
 }
 
 ####
@@ -560,6 +573,7 @@ test_no_kanban_transitions() {
   rm .transitions
   ./bugs.sh complete TEST-1234 > /dev/null
 }
+
 
 
 ###########################################
