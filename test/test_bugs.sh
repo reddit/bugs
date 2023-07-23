@@ -371,7 +371,23 @@ test_git_branch_with_switch_can_start_and_take() {
   fi'
   echo "$jira_me_response" >> ./jira_mock
   
-  ./bugs.sh branch "-ts" "TEST-1234" > /dev/null
+  ./bugs.sh branch "-t -s" "TEST-1234" > /dev/null
+  assert_jira_called_with '^issue move TEST-1234 start1'; success=$?
+  if [ $success -ne 0 ]; then
+    return $success
+  fi
+  assert_jira_called_with '^issue move TEST-1234 start 2'; success=$?
+  assert_jira_called_with '^me'; success=$?
+  assert_jira_called_with '^issue assign TEST-1234 bill.gates@microsoft.com'
+}
+
+test_git_branch_with_switch_can_start_and_take_duplicated() {
+  jira_me_response='if [[ "$1" == "me" ]]; then
+    echo "bill.gates@microsoft.com"
+  fi'
+  echo "$jira_me_response" >> ./jira_mock
+  
+  ./bugs.sh branch "-tst" "TEST-1234" > /dev/null
   assert_jira_called_with '^issue move TEST-1234 start1'; success=$?
   if [ $success -ne 0 ]; then
     return $success

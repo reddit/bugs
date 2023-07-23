@@ -701,7 +701,7 @@ print_help() {
 # Shitty argument parsing
 #  I should use getopts but I'm lazy
 
-# Append any SWITCHES to the end of the args
+# Append any switches to the end of the args
 #  e.g. bugs branch -ts TEST-1234 "fix the flux capacitor"
 #  turn into: bugs branch TEST-1234 "fix the flux capacitor" -ts
 SWITCH_ARGS=()
@@ -721,12 +721,18 @@ arg_rewrite_switches() {
   new_args+=("${SWITCH_ARGS[@]}")
 
   # Squash switches to single string, taking first character
-  #  e.g. -t -s --foo -> tsf
+  #  e.g. -ta -s --foo -> tasf
   for i in "${!SWITCH_ARGS[@]}"; do
-    # Remove all dashes
-    this_arg="${SWITCH_ARGS[$i]//-/}"
-    SWITCHES+="${this_arg:0:1}"
+    if [[ "${SWITCH_ARGS[$i]}" = "-"* ]]; then
+      SWITCHES+="${SWITCH_ARGS[$i]}"
+    elif [[ "${SWITCH_ARGS[$i]}" = "--"* ]]; then
+      this_arg="${SWITCH_ARGS[$i]//-/}"
+      SWITCHES+="${this_arg:0:1}"
+    fi
   done
+
+  # Remove duplicates
+  SWITCHES=$(echo "$SWITCHES" | grep -o "." | sort -u | tr -d "\n")
 
   # Set the args
   NEW_ARGS=("${new_args[@]}")
