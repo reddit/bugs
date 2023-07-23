@@ -680,7 +680,7 @@ print_help() {
   echo " ------"
   echo "  Just run 'bugs' and to configure jira auth + epics"
   echo ""
-  eche " Transitions:"
+  echo " Transitions:"
   echo " ------------"
   echo "   Jira projects limit issue state transitions. "
   echo "   For example, issues in TODO can only go to Ready. Only then can you click Started."
