@@ -321,6 +321,65 @@ test_branch_prints_name() {
     fi
 }
 
+test_git_branch_with_switch_assigns_short() {
+  jira_me_response='if [[ "$1" == "me" ]]; then
+    echo "bill.gates@microsoft.com"
+  fi'
+  echo "$jira_me_response" >> ./jira_mock
+  ./bugs.sh branch "TEST-1234" -t > /dev/null
+  assert_jira_called_with '^me'; success=$?
+  assert_jira_called_with '^issue assign TEST-1234 bill.gates@microsoft.com'
+  return $success && $?
+}
+
+test_git_branch_with_switch_assigns_short_prepend() {
+  jira_me_response='if [[ "$1" == "me" ]]; then
+    echo "bill.gates@microsoft.com"
+  fi'
+  echo "$jira_me_response" >> ./jira_mock
+  ./bugs.sh branch "-t" "TEST-1234" > /dev/null
+  assert_jira_called_with '^me'; success=$?
+  assert_jira_called_with '^issue assign TEST-1234 bill.gates@microsoft.com'
+  return $success && $?
+}
+
+test_git_branch_with_switch_assigns_long_prepend() {
+  jira_me_response='if [[ "$1" == "me" ]]; then
+    echo "bill.gates@microsoft.com"
+  fi'
+  echo "$jira_me_response" >> ./jira_mock
+  ./bugs.sh branch --take "TEST-1234" > /dev/null
+  assert_jira_called_with '^me'; success=$?
+  assert_jira_called_with '^issue assign TEST-1234 bill.gates@microsoft.com'
+  return $success && $?
+}
+
+
+test_git_branch_with_switch_starts_short_prepend() {
+  ./bugs.sh branch "-s" "TEST-1234" > /dev/null
+  assert_jira_called_with '^issue move TEST-1234 start1'; success=$?
+  if [ $success -ne 0 ]; then
+    return $success
+  fi
+  assert_jira_called_with '^issue move TEST-1234 start 2'; success=$?
+  return $?
+}
+
+test_git_branch_with_switch_can_start_and_take() {
+  jira_me_response='if [[ "$1" == "me" ]]; then
+    echo "bill.gates@microsoft.com"
+  fi'
+  echo "$jira_me_response" >> ./jira_mock
+  
+  ./bugs.sh branch "-ts" "TEST-1234" > /dev/null
+  assert_jira_called_with '^issue move TEST-1234 start1'; success=$?
+  if [ $success -ne 0 ]; then
+    return $success
+  fi
+  assert_jira_called_with '^issue move TEST-1234 start 2'; success=$?
+  assert_jira_called_with '^me'; success=$?
+  assert_jira_called_with '^issue assign TEST-1234 bill.gates@microsoft.com'
+}
 
 #### 
 # Jira tests
@@ -401,10 +460,6 @@ test_view_epic_local_dir_git_branch_no_path() {
 }
 
 test_view_epic_local_dir_git_branch_no_path() {
-  rev_parse_response='if [[ "$@" == "rev-parse --abbrev-ref HEAD" ]]; then
-    echo "not-a-jira-ticket/foo/bar"
-  fi'
-  echo "$rev_parse_response" >> ./git_mock
   ./bugs.sh . > /dev/null
   assert_jira_called_with "^epic list TEST-1236"
   return $?
@@ -517,9 +572,11 @@ test_make_new_bug_with_directory_shortcut() {
 
 test_kanban_start() {
   ./bugs.sh start TEST-1234 > /dev/null
-  assert_jira_called_with '^issue move TEST-1234 start1'
-  assert_jira_called_with '^issue move TEST-1234 start 2'
-  success=$?
+  assert_jira_called_with '^issue move TEST-1234 start1'; success=$?
+  if [ $success -ne 0 ]; then
+    return $success
+  fi
+  assert_jira_called_with '^issue move TEST-1234 start 2'; success=$?
   num_jira_commands=`wc -l < ./.last_jira_mock_args`
   if [ $num_jira_commands -ne 3 ]; then
     return 1
@@ -572,6 +629,18 @@ test_kanban_block() {
 test_no_kanban_transitions() {
   rm .transitions
   ./bugs.sh complete TEST-1234 > /dev/null
+}
+
+test_take() {
+  jira_me_response='if [[ "$1" == "me" ]]; then
+    echo "bill.gates@microsoft.com"
+  fi'
+  echo "$jira_me_response" >> ./jira_mock
+
+  ./bugs.sh take TEST-1234 > /dev/null
+  assert_jira_called_with '^me'; success=$?
+  assert_jira_called_with '^issue assign TEST-1234 bill.gates@microsoft.com'
+  return $success && $?
 }
 
 

@@ -260,8 +260,19 @@ acting_on_issue() {
   echo "$title"
 }
 
-
-
+best_ticket_for_folder() {
+  if [[ $1 != "epic" ]]; then
+    branch_name=`$GIT_COMMAND rev-parse --abbrev-ref HEAD | cut -d '/' -f1`
+    looks_like_jira_issue "$branch_name"
+    if [[ $? == 0 ]]; then
+      echo "$branch_name"
+      return 0
+    fi
+  fi
+  folder_name=$(basename "$PWD")
+  folder_name=`squish_string "$folder_name"`
+  echo "$folder_name"
+}
 
 # PART THREE :)
 
@@ -396,7 +407,7 @@ looks_like_command() {
   maybe_cmd="$1"
   cmds=("open" "close" "start" "complete"
         "cancel" "pause" "scratch" "quarter"
-        "epic" "branch")
+        "epic" "branch" "reset" "take" "block")
   if [[ " ${cmds[*]} " =~ " $maybe_cmd " ]]; then
     return 1
   fi
@@ -494,6 +505,8 @@ fuzzy_issue_open() {
 branch() {
   issue=`epic_from_shortcut "$1"`
   success=$?
+
+  switches="$3"
   if [[ $success == 0 ]]; then
     echo "Using an epic, not a JIRA issue, for branch."
     echo "Totally cool, but if its a big work item, think about"
@@ -503,7 +516,7 @@ branch() {
     if [[ $? == 0 ]]; then
       issue=$1
     else
-      echo "Not a valid JIRA issue"
+      echo "Not a valid JIRA issue - '$1'"
       return 1
     fi
   fi
@@ -519,7 +532,22 @@ branch() {
   fi
   acting_on_issue "$issue" "Branching"
   $GIT_COMMAND checkout -b "$branch_name"
+
+  # Perform follow on actions in switches
+  for (( i=0; i<${#switches}; i++ )); do
+    this_switch="${switches:$i:1}"
+    case $this_switch in
+      "t")
+        assign_to_me $issue
+        ;;
+      "s")
+        start_issue $issue
+        ;;
+    esac
+  done
+
   $GIT_COMMAND status
+
 }
 
 
@@ -586,19 +614,12 @@ block_issue() {
   transition_issue $1 "$transitions" "$2"
 }
 
-
-best_ticket_for_folder() {
-  if [[ $1 != "epic" ]]; then
-    branch_name=`$GIT_COMMAND rev-parse --abbrev-ref HEAD | cut -d '/' -f1`
-    looks_like_jira_issue "$branch_name"
-    if [[ $? == 0 ]]; then
-      echo "$branch_name"
-      return 0
-    fi
-  fi
-  folder_name=$(basename "$PWD")
-  folder_name=`squish_string "$folder_name"`
-  echo "$folder_name"
+assign_to_me() {
+  issue=$1
+  user=$($JIRA_COMMAND me)
+  echo "Assigning to $user"
+  acting_on_issue $issue "Assigning to $user"
+  $JIRA_COMMAND issue assign $issue $user
 }
 
 
@@ -614,6 +635,7 @@ print_help() {
   echo "    open - open an issue or epic in your browser"
   echo "    epic - list issues in an epic"
   echo "    branch - create a branch for an issue"
+  echo "    take - assign an issue to me"
   echo "    scratch - add, remove, or list scratch notes"
   echo "    quarter - list the current quarter's epics"
   echo "    create - create an issue under an epic"
@@ -642,6 +664,8 @@ print_help() {
   echo ""
   echo "   Branch for an issue or epic:"
   echo "    bugs branch TEST-1234 \"fix the flux capacitor\""
+  echo "    bugs branch TEST-1234 \"fix the flux capacitor\"" --take --start
+  echo "    bugs branch -ts TEST-1234 \"fix the flux capacitor\""
   echo ""
   echo "   Start (pause/stop/etc) an issue:"
   echo "    bugs start TEST-1234 \"started work\""
@@ -673,8 +697,45 @@ print_help() {
 
 }
 
+# ----------------------------------------
+# Shitty argument parsing
+#  I should use getopts but I'm lazy
 
-# Patch . with the current directory as if its an epic
+# Append any SWITCHES to the end of the args
+#  e.g. bugs branch -ts TEST-1234 "fix the flux capacitor"
+#  turn into: bugs branch TEST-1234 "fix the flux capacitor" -ts
+SWITCH_ARGS=()
+NEW_ARGS=()
+SWITCHES=""
+
+arg_rewrite_switches() {
+  new_args=()
+  args=("$@")
+  for i in "${!args[@]}"; do
+    if [[ "${args[$i]}" = "-"* ]]; then
+      SWITCH_ARGS+=("${args[$i]}")
+    else
+      new_args+=("${args[$i]}")
+    fi
+  done
+  new_args+=("${SWITCH_ARGS[@]}")
+
+  # Squash switches to single string, taking first character
+  #  e.g. -t -s --foo -> tsf
+  for i in "${!SWITCH_ARGS[@]}"; do
+    # Remove all dashes
+    this_arg="${SWITCH_ARGS[$i]//-/}"
+    SWITCHES+="${this_arg:0:1}"
+  done
+
+  # Set the args
+  NEW_ARGS=("${new_args[@]}")
+}
+
+arg_rewrite_switches "$@"
+set -- "${NEW_ARGS[@]}"
+
+# Patch . in args with the current directory as if its an epic
 # So if you have the current directory "search-bench" and there's an epic with
 # that shortcut, then it will use that epic when you do:
 #  bugs .
@@ -684,14 +745,14 @@ if [[ $2 == "." ]]; then
   if [[ $1 == "epic" ]]; then
     prefer_epic="epic"
   fi
-  set -- $1 `best_ticket_for_folder $prefer_epic` "$3"
+  set -- $1 `best_ticket_for_folder $prefer_epic` "$3" "$4" "$5"
 elif [[ $1 == "." ]]; then
-  set -- `best_ticket_for_folder` "$2" "$3"
+  set -- `best_ticket_for_folder` "$2" "$3" "$4" "$5"
+elif [[ $3 == "." ]]; then
+  set -- "$1" "$2" `best_ticket_for_folder` "$4" "$5"
 fi
 
 
-# Shitty argument parsing
-#  I should use getopts but I'm lazy
 if [[ $1 == "bunny" ]]; then
   bugs_bunny
 # Kanbanish commands
@@ -720,11 +781,13 @@ elif [[ $1 == "epic" ]]; then
 elif [[ $1 == "create" ]]; then
   bug "$2" "$3"
 elif [[ $1 == "branch" ]]; then
-  branch "$2" "$3"
+  branch "$2" "$3" "$SWITCHES"
 elif [[ $1 == "help" ]]; then
   print_help
 elif [[ $1 == "reset" ]]; then
   reset_quarter
+elif [[ $1 == "take" ]]; then
+  assign_to_me "$2"
 elif [[ $1 != "" ]]; then
   if [[ $2 == "" ]]; then
     fuzzy_issue_open "$1"
