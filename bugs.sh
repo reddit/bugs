@@ -51,6 +51,8 @@ if [[ ! -f "jira_mock" ]]; then
   NET_RC_FILE="$HOME/.netrc"
 fi
 
+orig_args=("$@")
+
 # No quarter file? Change to reset
 if [[ ! -f "$QUARTER_FILE" ]]; then
   set -- "reset"
@@ -260,6 +262,19 @@ acting_on_issue() {
   echo "$title"
 }
 
+epic_matches_folder() {
+  epic_name="$1"
+  epic_name=$(squish_string "$epic_name")
+
+  folder_name=$(basename "$PWD")
+  folder_name=$(squish_string "$folder_name")
+
+  echo "EPIC: $epic_name"
+  echo "FOLDER: $folder_name"
+
+  [[ "$epic_name" == "$folder_name" ]]
+}
+
 best_ticket_for_folder() {
   if [[ $1 != "epic" ]]; then
     branch_name=`$GIT_COMMAND rev-parse --abbrev-ref HEAD | cut -d '/' -f1`
@@ -431,12 +446,20 @@ bug() {
   success=$?
   if [[ $success != 0 ]]; then
     echo "Epic '$1' not found in $QUARTER_FILE for $EPIC"
-    EPIC=$(best_ticket_for_folder "epic")
-    EPIC=$(epic_from_shortcut "$EPIC")
-    success=$?
-    if [[ $success != 0 ]]; then
-      echo "No epic found in $QUARTER_FILE for $PWD"
-      return 1
+
+    orig_arg_1=${orig_args[0]}
+    [[ -d "$EPIC" ]] ; arg_is_folder_name=$?
+    [[ $orig_arg_1 == "." ]] ; dot_rewritten=$?
+
+    if [[ ($dot_rewritten == 0) || ($arg_is_folder_name == 0) ]] ; then
+      EPIC=$(best_ticket_for_folder "epic")
+      EPIC=$(epic_from_shortcut "$EPIC")
+      success=$?
+      echo "Using $EPIC"
+      if [[ $success != 0 ]]; then
+        echo "No epic found in $QUARTER_FILE for $PWD"
+        return 1
+      fi
     fi
   fi
   summary="$2"
@@ -447,7 +470,15 @@ bug() {
     echo " bugs expects: bugs <cmd> <EPIC> "
     return 1
   fi
-  echo $summary
+
+  if ! looks_like_jira_issue "$EPIC"; then
+    echo "Your epic argument '$orig_arg_1' does not exist in Jira"
+    echo "Or you are attempting to execute a non-existant command"
+    echo " bugs expects: bugs <cmd> <EPIC> "
+    echo " run 'bugs help' for more info"
+    return 1
+  fi
+
   if [[ "$summary" = *[![:space:]]* ]]; then
     echo "Create bug in $EPIC"
     $JIRA_COMMAND issue create -tTask --no-input --parent "$EPIC" --summary "$summary"
