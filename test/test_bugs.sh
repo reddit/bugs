@@ -1,8 +1,23 @@
 #!/usr/bin/env bash
 
-## Put test fixtures locally
+trim() {
+    local var=$1
+    var="${var#"${var%%[![:space:]]*}"}"   # Remove leading whitespace
+    var="${var%"${var##*[![:space:]]}"}"   # Remove trailing whitespace
+    echo -n "$var"
+}
+
+num_lines() {
+  if [[ -f "$1" ]]; then
+    file_wc=$(cat "$1" | wc -l)
+    echo $(trim "$file_wc")
+  else
+    echo 0
+  fi
+}
 
 fixtures() {
+  ## Put test fixtures locally
     current_dir=`basename "$PWD"`
     with_underscores_current_dir=$(echo "$current_dir" | sed 's/[[:alnum:]]/&_/') 
     cp test/command_mock.sh jira_mock
@@ -554,7 +569,7 @@ test_make_new_bug_uses_folder_shortcut_on_branch() {
 
 test_make_new_bug_empty_fails() {
   ./bugs.sh proj1 " " > /dev/null
-  num_jira_commands=`wc -l < ./.last_jira_mock_args`
+  num_jira_commands=$(num_lines ./.last_jira_mock_args)
   if [ $num_jira_commands -ne 0 ]; then
     cat ./.last_jira_mock_args
     return 1
@@ -564,7 +579,7 @@ test_make_new_bug_empty_fails() {
 
 test_make_new_bug_with_command_summary_fails() {
   ./bugs.sh proj1 "open" > /dev/null
-  num_jira_commands=`wc -l < ./.last_jira_mock_args`
+  num_jira_commands=$(num_lines ./.last_jira_mock_args)
   if [ $num_jira_commands -ne 0 ]; then
     cat ./.last_jira_mock_args
     return 1
@@ -584,6 +599,16 @@ test_make_new_bug_with_directory_shortcut() {
   return $?
 }
 
+test_no_new_bug_created_with_unexpected_cmd() {
+  ./bugs.sh foo "Do the thing" > /dev/null
+  cat .last_jira_mock_args
+  num_jira_commands=$(num_lines .last_jira_mock_args)
+  if [ $num_jira_commands -ne 0 ]; then
+    echo "Expected no jira commands to be called, received: $num_jira_commands cmds"
+    return 1
+  fi
+}
+
 # Kanban transitions
 
 test_kanban_start() {
@@ -593,7 +618,7 @@ test_kanban_start() {
     return $success
   fi
   assert_jira_called_with '^issue move TEST-1234 start 2'; success=$?
-  num_jira_commands=`wc -l < ./.last_jira_mock_args`
+  num_jira_commands=$(num_lines .last_jira_mock_args)
   if [ $num_jira_commands -ne 3 ]; then
     return 1
   fi
